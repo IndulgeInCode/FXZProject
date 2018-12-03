@@ -35,9 +35,9 @@ def getReview(productId = 0):
                 dict["score"] = score
 
                 if(score <= 2):
-                    dict["sentiment"] = 0
+                    dict["sentiment"] = 0.0
                 else:
-                    dict["sentiment"] = 5
+                    dict["sentiment"] = 4.0
                 list.append(dict)
             dbConnect.insertDataInList(list)
 

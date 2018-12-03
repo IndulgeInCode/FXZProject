@@ -11,12 +11,14 @@ sys.setdefaultencoding('utf-8')
 
 # 正则过滤表达式
 r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
+maxSeqLength = 250
+verctorSize = 10
 
 def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
 
-    data = dbConnect.getTrainData()
+    data = dbConnect.getTrainData(begin=0,end=500)
 
     sentences = []
     for x in data:
@@ -26,14 +28,10 @@ def buildModel():
         # allSentences.extend(result)
         sentences.append(result)
 
-    # print ("total words: {}".format(len(allSentences)))
-    # print ("unique words: {}".format(len(set(allSentences))))
-
-
     # min_count指定了需要训练词语的最小出现次数，默认为5
     # size指定了训练时词向量维度，默认为100
     # worker指定了完成训练过程的线程数，默认为1不使用多线程。只有注意安装Cython的前提下该参数设置才有意义
-    model = Word2Vec(sentences, min_count = 1, size = 1)
+    model = Word2Vec(sentences, min_count = 1, size = verctorSize)
 
     # 保存模型
     model.save("model/word2vecModel")
@@ -42,7 +40,7 @@ def buildModel():
 
 # 将句子变成向量形式
 def getTrainSenteceVec():
-    data = dbConnect.getTrainData()
+    data = dbConnect.getTrainData(begin = 0, end = 1000)
     model = Word2Vec.load('model/word2vecModel')
     # print (model[u'罗技'])
     x = []
@@ -53,15 +51,17 @@ def getTrainSenteceVec():
         sentence = row[1]
         sentence = re.sub(r, '', str(sentence))
         se_list = jieba.cut(sentence)
-        sentenVec = []
+
+        sentenVec = np.zeros([maxSeqLength,verctorSize], dtype='float32')
         count = 0
         for out in se_list:
-            if (count < 10 and out in model):
-                sentenVec.extend(model[out])
+            if (count < maxSeqLength and out in model):
+                sentenVec[count] = model[out]
                 count += 1
-        if(count == 10):
-            x.extend(sentenVec)
-            y.append(row[3])
+        x.append(sentenVec)
+        y_tru = [0,0,0,0,0]
+        y_tru[row[3]] = 1;
+        y.append(y_tru)
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32)
 
 

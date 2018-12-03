@@ -32,11 +32,11 @@ def insertDataInList(data, user="root", password="fengxuanzhen", database="senti
         conn.commit()
     cursor.close()
 
-def getTrainData(user="root", password="fengxuanzhen", database="sentimentJD_review"):
+def getTrainData(begin, end, user="root", password="fengxuanzhen", database="sentimentJD_review"):
     conn = mysql.connector.connect(user=user, password=password, database=database)
     cursor = conn.cursor();
-
-    cursor.execute("select * from review limit 0,2000 ")
+    sqlsearch = "select * from review limit "+ str(begin) +", "+ str(end)
+    cursor.execute(sqlsearch)
     values = cursor.fetchall()
     cursor.close()
     return values
