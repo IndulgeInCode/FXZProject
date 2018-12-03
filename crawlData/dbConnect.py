@@ -7,6 +7,12 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+host = "10.103.247.186"
+# host = ""
+user = "root"
+password = "fengxuanzhen"
+database = "sentimentJD_review"
+auth_plugin="mysql_native_password"
 def generate_gid():
     first = int(time.time())
     second = (int)(random.random()*1000)
@@ -21,8 +27,8 @@ def connectSql(user, password, host):
         cnsql.close()
 
 
-def insertDataInList(data, user="root", password="fengxuanzhen", database="sentimentJD_review"):
-    conn = mysql.connector.connect(user=user, password=password, database=database)
+def insertDataInList(data):
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor();
 
     for value in data:
@@ -32,8 +38,8 @@ def insertDataInList(data, user="root", password="fengxuanzhen", database="senti
         conn.commit()
     cursor.close()
 
-def getTrainData(begin, end, user="root", password="fengxuanzhen", database="sentimentJD_review"):
-    conn = mysql.connector.connect(user=user, password=password, database=database)
+def getTrainData(begin, end):
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
     sqlsearch = "select * from review limit "+ str(begin) +", "+ str(end)
     cursor.execute(sqlsearch)
@@ -41,8 +47,8 @@ def getTrainData(begin, end, user="root", password="fengxuanzhen", database="sen
     cursor.close()
     return values
 
-def getTestData(data, user="root", password="fengxuanzhen", database="sentimentJD_review"):
-    conn = mysql.connector.connect(user=user, password=password, database=database, charset="utr8")
+def getTestData(data):
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin, charset="utr8")
     cursor = conn.cursor();
     cursor.execute("select * from review limit 0,100 ")
     values = cursor.fetchall()
