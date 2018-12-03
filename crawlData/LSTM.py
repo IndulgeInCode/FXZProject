@@ -130,7 +130,7 @@ with tf.Session(graph=graph) as sess:
     print ("X_train.shape :", X_train.shape)
     print ("y_train.shape :", y_train.shape)
 
-    print "循环",TRAIN_EXAMPLES/BATCH_SIZE,"次"
+    print ("循环",TRAIN_EXAMPLES/BATCH_SIZE,"次")
 
     for epoch in range(1,EPOCH+1):
         #results = np.zeros(shape=(TEST_EXAMPLES, 10))
@@ -153,7 +153,7 @@ with tf.Session(graph=graph) as sess:
             accus.append(accu)
 
 
-        print "average training loss:", (sum(train_losses) / len(train_losses))
-        print "accuracy:",sum(accus)/len(accus)
-        print "\n"
+        print ("average training loss:", (sum(train_losses) / len(train_losses)))
+        print ("accuracy:",sum(accus)/len(accus))
+        print ("\n")
 
