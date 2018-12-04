@@ -18,7 +18,7 @@ def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
 
-    data = dbConnect.getTrainData(begin=0,end=500)
+    data = dbConnect.getTrainData(begin=0,end=6000)
 
     sentences = []
     for x in data:
@@ -40,7 +40,7 @@ def buildModel():
 
 # 将句子变成向量形式
 def getTrainSenteceVec():
-    data = dbConnect.getTrainData(begin = 0, end = 1000)
+    data = dbConnect.getTrainData(begin = 0, end = 6000)
     model = Word2Vec.load('model/word2vecModel')
     # print (model[u'罗技'])
     x = []
@@ -66,6 +66,6 @@ def getTrainSenteceVec():
 
 
 if __name__ == '__main__':
-    # buildModel()
-    result = getTrainSenteceVec()
-    print result[0]
+    buildModel()
+    # result = getTrainSenteceVec()
+    # print result[0]
