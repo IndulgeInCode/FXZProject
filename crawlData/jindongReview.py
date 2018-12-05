@@ -44,16 +44,14 @@ def getReview(productId = 0):
         except:
             print "获取数据错误"
 
-def getProductIdByCategre():
+def getProductIdByCategre(cat):
     ids = []
-    url = 'https://list.jd.com/list.html?cat=670,686,690'
+    url = 'https://list.jd.com/list.html?cat='+ str(cat)
     request = urllib2.Request(url)
     response = urllib2.urlopen(request)
     html = response.read()
     soup = BeautifulSoup(html, 'html.parser')
     allList = soup.find_all('div', attrs={'class': 'gl-i-wrap j-sku-item'})
-
-
     for a in allList:
         ids.append(a['data-sku'])
 
@@ -61,7 +59,8 @@ def getProductIdByCategre():
 
 
 if __name__ == '__main__':
-    ids = getProductIdByCategre()
+    ids = getProductIdByCategre('9987,653,655&page=3')
+    ids.extend(getProductIdByCategre('670,671,672&page=3'))
     for id in ids:
         getReview(id)
 
