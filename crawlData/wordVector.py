@@ -34,14 +34,14 @@ def buildModel():
     model = Word2Vec(sentences, min_count = 1, size = verctorSize)
 
     # 保存模型
-    model.save("model/word2vecModel")
+    model.save("word2vecModel/word2vecModel")
 
 
 
 # 将句子变成向量形式
 def getTrainSenteceVec():
     data = dbConnect.getTrainData(begin = 0, end = 6000)
-    model = Word2Vec.load('model/word2vecModel')
+    model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
     y = []
