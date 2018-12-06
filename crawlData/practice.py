@@ -25,19 +25,7 @@ NUM_EPOCHS = 30  # Model easily overfits without pre-trained words embeddings, t
 DELTA = 0.5
 MODEL_PATH = './model'
 
-# # 加载数据集
-# (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=NUM_WORDS, index_from=INDEX_FROM)
-#
-# # 数据预处理
-# #找到训练样本中词的最大长度
-# vocabulary_size = get_vocabulary_size(X_train)
-# # 将测试样本中长度的大于vocabulary_size的词去掉
-# # （例如，最大长度为3，则去掉句子中的【0，0，0，1】.....）
-# X_test = fit_in_vocabulary(X_test, vocabulary_size)
-# # 长度不够的补0
-# X_train = zero_pad(X_train, SEQUENCE_LENGTH)
-# X_test = zero_pad(X_test, SEQUENCE_LENGTH)
-
+# init data
 X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
 X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
 
@@ -50,17 +38,6 @@ with tf.name_scope('Inputs'):
     target_ph = tf.placeholder(tf.float32, [None], name='target_ph')
     seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
-
-
-
-# Embedding layer
-# with tf.name_scope('Embedding_layer'):
-    # embeddings_var = tf.Variable(tf.random_uniform([vocabulary_size, EMBEDDING_DIM], -1.0, 1.0), trainable=True)
-    # tf.summary.histogram('embeddings_var', embeddings_var)
-    # batch_embedded = tf.nn.embedding_lookup(embeddings_var, batch_ph)
-
-
-
 
 
 # (Bi-)RNN layer(-s)
