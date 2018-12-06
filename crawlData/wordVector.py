@@ -39,8 +39,11 @@ def buildModel():
 
 
 # 将句子变成向量形式
-def getTrainSenteceVec():
-    data = dbConnect.getTrainData(begin = 0, end = 6000)
+def getTrainSenteceVec(type):
+    if type == 1:
+        data = dbConnect.getData(begin = 0, end = 6000)
+    else :
+        data = dbConnect.getData(begin=6000, end=12000)
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
