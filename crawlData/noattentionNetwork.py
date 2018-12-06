@@ -23,7 +23,7 @@ KEEP_PROB = 0.5
 BATCH_SIZE = 256
 NUM_EPOCHS = 50  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
-MODEL_PATH = './model/attention_model'
+MODEL_PATH = './model/noattention_model'
 
 # init data
 X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
@@ -48,12 +48,12 @@ tf.summary.histogram('RNN_outputs', rnn_outputs)
 
 
 # Attention layer
-with tf.name_scope('Attention_layer'):
-    attention_output, alphas = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
-    tf.summary.histogram('alphas', alphas)
+# with tf.name_scope('Attention_layer'):
+#     attention_output, alphas = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+#     tf.summary.histogram('alphas', alphas)
 
 # Dropout
-drop = tf.nn.dropout(attention_output, keep_prob_ph)
+drop = tf.nn.dropout(rnn_outputs, keep_prob_ph)
 
 
 
