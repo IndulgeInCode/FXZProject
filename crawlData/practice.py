@@ -38,8 +38,8 @@ MODEL_PATH = './model'
 # X_train = zero_pad(X_train, SEQUENCE_LENGTH)
 # X_test = zero_pad(X_test, SEQUENCE_LENGTH)
 
-(X_train, y_train) = wordVector.getTrainSenteceVec()
-(X_test, y_test) = wordVector.getTrainSenteceVec()
+X_train, y_train = wordVector.getTrainSenteceVec()
+X_test, y_test = wordVector.getTrainSenteceVec()
 
 
 
