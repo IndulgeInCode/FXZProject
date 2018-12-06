@@ -21,7 +21,7 @@ HIDDEN_SIZE = 150
 ATTENTION_SIZE = 50
 KEEP_PROB = 0.8
 BATCH_SIZE = 256
-NUM_EPOCHS = 2  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+NUM_EPOCHS = 5  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model'
 
