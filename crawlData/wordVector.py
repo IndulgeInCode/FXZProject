@@ -59,8 +59,8 @@ def getTrainSenteceVec():
                 sentenVec[count] = model[out]
                 count += 1
         x.append(sentenVec)
-        y_tru = [0,0,0,0,0]
-        y_tru[row[3]] = 1;
+        y_tru = [0,0,0]
+        y_tru[row[3]-1] = 1;
         y.append(y_tru)
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32)
 
