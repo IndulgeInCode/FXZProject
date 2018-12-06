@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from keras.datasets import imdb
 from tensorflow.contrib.rnn import GRUCell
-from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as bi_rnn
+from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from tqdm import tqdm
 
 from attention import attention
@@ -16,7 +16,7 @@ import wordVector
 NUM_WORDS = 10000
 INDEX_FROM = 3
 SEQUENCE_LENGTH = 250
-EMBEDDING_DIM = 100
+EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 ATTENTION_SIZE = 50
 KEEP_PROB = 0.8
@@ -38,15 +38,15 @@ MODEL_PATH = './model'
 # X_train = zero_pad(X_train, SEQUENCE_LENGTH)
 # X_test = zero_pad(X_test, SEQUENCE_LENGTH)
 
-X_train, y_train = wordVector.getTrainSenteceVec()
-X_test, y_test = wordVector.getTrainSenteceVec()
+X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec()
+X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec()
 
 
 
 
 # Different placeholders
 with tf.name_scope('Inputs'):
-    batch_ph = tf.placeholder(tf.int32, [None, SEQUENCE_LENGTH], name='batch_ph')
+    input_data = tf.placeholder(tf.float32, [None, SEQUENCE_LENGTH, EMBEDDING_DIM], name='input_data')
     target_ph = tf.placeholder(tf.float32, [None], name='target_ph')
     seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
@@ -64,8 +64,8 @@ with tf.name_scope('Inputs'):
 
 
 # (Bi-)RNN layer(-s)
-rnn_outputs, _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE),
-                        inputs=batch_ph, sequence_length=seq_len_ph, dtype=tf.float32)
+rnn_outputs, _ = bidirectional_dynamic_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE),
+                        inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 tf.summary.histogram('RNN_outputs', rnn_outputs)
 
 
@@ -124,31 +124,50 @@ if __name__ == "__main__":
 
             print("epoch: {}\t".format(epoch))
 
-            # Training
             num_batches = X_train.shape[0] // BATCH_SIZE
-            for b in tqdm(range(num_batches)):
-                x_batch, y_batch = next(train_batch_generator)
-                seq_len = np.array([list(x).index(0) + 1 for x in x_batch])  # actual lengths of sequences
+            for j in tqdm(range(num_batches-1)):
                 loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
-                                                    feed_dict={batch_ph: x_batch,
-                                                               target_ph: y_batch,
-                                                               seq_len_ph: seq_len,
+                                                    feed_dict={input_data:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                                                               target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                                                               seq_len_ph: seq_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
                 # train_writer.add_summary(summary, b + num_batches * epoch)
             accuracy_train /= num_batches
+            # Training
+            # num_batches = X_train.shape[0] // BATCH_SIZE
+            # for b in tqdm(range(num_batches)):
+            #     x_batch, y_batch = next(train_batch_generator)
+            #     seq_len = np.array([list(x).index(0) + 1 for x in x_batch])  # actual lengths of sequences
+            #     loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
+            #                                         feed_dict={input_data: x_batch,
+            #                                                    target_ph: y_batch,
+            #                                                    seq_len_ph: seq_len,
+            #                                                    keep_prob_ph: KEEP_PROB})
+            #     accuracy_train += acc
+            #     loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
+            #     # train_writer.add_summary(summary, b + num_batches * epoch)
+            # accuracy_train /= num_batches
+
+
+
 
             # Testing
             num_batches = X_test.shape[0] // BATCH_SIZE
-            for b in tqdm(range(num_batches)):
-                x_batch, y_batch = next(test_batch_generator)
-                seq_len = np.array([list(x).index(0) + 1 for x in x_batch])  # actual lengths of sequences
+            for b in tqdm(range(num_batches-1)):
+                # x_batch, y_batch = next(test_batch_generator)
+                # seq_len = np.array([list(x).index(0) + 1 for x in x_batch])  # actual lengths of sequences
+                # loss_test_batch, acc, summary = sess.run([loss, accuracy, merged],
+                #                                          feed_dict={input_data: x_batch,
+                #                                                     target_ph: y_batch,
+                #                                                     seq_len_ph: seq_len,
+                #                                                     keep_prob_ph: 1.0})
                 loss_test_batch, acc, summary = sess.run([loss, accuracy, merged],
-                                                         feed_dict={batch_ph: x_batch,
-                                                                    target_ph: y_batch,
-                                                                    seq_len_ph: seq_len,
-                                                                    keep_prob_ph: 1.0})
+                                                    feed_dict={input_data: X_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
+                                                               target_ph: y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
+                                                               seq_len_ph: seq_len_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
+                                                               keep_prob_ph: 1.0})
                 accuracy_test += acc
                 loss_test += loss_test_batch
                 # test_writer.add_summary(summary, b + num_batches * epoch)
