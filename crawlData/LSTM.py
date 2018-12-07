@@ -75,7 +75,7 @@ with graph.as_default():
     states_fw=states[0]
     states_bw = states[1]
     #
-    h = states_fw[0][1]
+    h = states_fw[-1][1]
 
     # Fully connected layer
     with tf.name_scope('Fully_connected_layer'):
