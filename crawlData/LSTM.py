@@ -8,7 +8,7 @@ import wordVector
 
 
 TIME_STEPS=10
-BATCH_SIZE=100
+BATCH_SIZE=256
 HIDDEN_UNITS=5
 LEARNING_RATE=0.3
 EPOCH=30
@@ -136,12 +136,6 @@ with graph.as_default():
 #-------------------------------------------定义 Session---------------------------------------#
 with tf.Session(graph=graph) as sess:
     sess.run(init)
-
-    print ("X_train.shape :", X_train.shape)
-    print ("y_train.shape :", y_train.shape)
-
-    print ("循环",TRAIN_EXAMPLES/BATCH_SIZE,"次")
-
     for epoch in range(1,EPOCH+1):
         #results = np.zeros(shape=(TEST_EXAMPLES, 10))
         train_losses=[]
