@@ -8,7 +8,7 @@ import wordVector
 
 
 TIME_STEPS=10
-BATCH_SIZE=256
+BATCH_SIZE=124
 HIDDEN_UNITS=5
 LEARNING_RATE=0.3
 EPOCH=30
@@ -130,6 +130,8 @@ with graph.as_default():
     # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
     #print(loss.shape)
+    session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+
     init=tf.global_variables_initializer()
 
 
