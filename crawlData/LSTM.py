@@ -75,7 +75,7 @@ with graph.as_default():
     states_fw=states[0]
     states_bw = states[1]
     #
-    h = states_fw[1][1]
+    h = states_fw[0][1]
 
     # Fully connected layer
     with tf.name_scope('Fully_connected_layer'):
@@ -181,11 +181,11 @@ with tf.Session(graph=graph) as sess:
             test_accus.append(accu)
 
 
-        print ("average training loss:", (sum(train_losses) / len(train_losses)))
-        print ("train_accuracy:",sum(train_accus)/len(train_accus))
+        print ("loss:", (sum(train_losses) / len(train_losses)), "accuracy:",sum(train_accus)/len(train_accus))
+        # print ("train_accuracy:",sum(train_accus)/len(train_accus))
         print ("\n")
 
-        print ("average test loss:", (sum(test_losses) / len(test_losses)))
-        print ("test_accuracy:", sum(test_accus) / len(test_accus))
+        print ("test_loss:", (sum(test_losses) / len(test_losses)), "test_accuracy:", sum(test_accus) / len(test_accus))
+        # print ("test_accuracy:", sum(test_accus) / len(test_accus))
         print ("\n")
 
