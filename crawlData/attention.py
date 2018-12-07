@@ -11,6 +11,7 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
         #在第三维上进行合并
         inputs = tf.concat(inputs, 2)
 
+    #和bidirectional_dynamic_rnn的time_major设置有关系
     if time_major:
         # (T,B,D) => (B,T,D)
         inputs = tf.array_ops.transpose(inputs, [1, 0, 2])
