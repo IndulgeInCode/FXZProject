@@ -57,12 +57,12 @@ with graph.as_default():
     lstm_forward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
     # lstm_forward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
 
-    lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1, lstm_forward_2])
+    lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1])
 
     lstm_backward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
     lstm_backward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
 
-    lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1, lstm_backward_2])
+    lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1])
 
 
     outputs,states=tf.nn.bidirectional_dynamic_rnn(
