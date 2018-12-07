@@ -52,14 +52,28 @@ tf.summary.histogram('RNN_outputs', rnn_outputs)
 #     attention_output, alphas = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
 #     tf.summary.histogram('alphas', alphas)
 
+
+# 判断结果是不是双向网络的结果，如果是合并
+if isinstance(rnn_outputs, tuple):
+    # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
+    # 在第三维上进行合并
+    rnn_outputs = tf.concat(rnn_outputs, 2)
+
+rnn_outputs=rnn_outputs[:,-1,:]
+
+tf.expand_dims(rnn_outputs, -1)
+
 # Dropout
 drop = tf.nn.dropout(rnn_outputs, keep_prob_ph)
 
 
 
+
+
 # Fully connected layer
 with tf.name_scope('Fully_connected_layer'):
-    W = tf.Variable(tf.truncated_normal([HIDDEN_SIZE * 2, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
+
+    W = tf.Variable(tf.truncated_normal([HIDDEN_SIZE*2, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
     b = tf.Variable(tf.constant(0., shape=[1]))
     y_hat = tf.nn.xw_plus_b(drop, W, b)
     y_hat = tf.squeeze(y_hat)
