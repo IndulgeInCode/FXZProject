@@ -31,13 +31,6 @@ X_test = X_train
 
 TRAIN_EXAMPLES = len(X_train)
 
-#trans the shape to (batch,time_steps,input_size)
-#
-# X_train=np.reshape(X_train,newshape=(-1,TIME_STEPS,1))
-# y_train=np.reshape(y_train,newshape=(-1,5))
-# X_test=np.reshape(X_test,newshape=(-1,TIME_STEPS,1))
-
-
 
 
 
@@ -58,32 +51,32 @@ with graph.as_default():
 
     y_tru=tf.placeholder(dtype=tf.float32 ,shape=[BATCH_SIZE],name="pred_placeholder")
 
+    senten_len_batch = tf.placeholder(dtype=tf.int32 ,shape=[BATCH_SIZE],name="senten_len_batch")
+
     #lstm instance
-    lstm_forward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_forward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_forward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_forward_4 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS_final)
+    lstm_forward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_forward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
+    # lstm_forward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
 
-    lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1, lstm_forward_2, lstm_forward_4])
+    lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1, lstm_forward_2])
 
-    lstm_backward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_backward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_backward_4 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS_final)
+    lstm_backward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_backward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
 
-    lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1, lstm_backward_2, lstm_backward_4])
+    lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1, lstm_backward_2])
 
 
     outputs,states=tf.nn.bidirectional_dynamic_rnn(
         cell_fw=lstm_forward,
         cell_bw=lstm_backward,
         inputs=x_tru,
+        sequence_length=senten_len_batch,
         dtype=tf.float32
     )
-    outputs_fw=outputs[0]
-    outputs_bw = outputs[1]
+    h_fw=states[0]
+    h_bw = states[1]
     # h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
-    h = outputs_fw[:, -1, :]
+    h = h_fw[0][1]
     print("h.shape is :",h.shape)
 
     # Fully connected layer
@@ -165,7 +158,9 @@ with tf.Session(graph=graph) as sess:
                     fetches=(optimizer,h, accuracy, loss),
                     feed_dict={
                             x_tru:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                            y_tru:y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
+                            y_tru:y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                            senten_len_batch:senten_len[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
+
                         }
             )
             # print hout
