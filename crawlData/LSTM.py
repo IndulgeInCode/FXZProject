@@ -9,8 +9,7 @@ import wordVector
 
 TIME_STEPS=10
 BATCH_SIZE=100
-HIDDEN_UNITS1=150
-HIDDEN_UNITS_final=150
+HIDDEN_UNITS=5
 LEARNING_RATE=0.3
 EPOCH=30
 # 最后输出分类类别数量
@@ -25,12 +24,12 @@ TEST_EXAMPLES=400
 # get values
 # one-hot on labels
 
-X_train, y_train, senten_len = wordVector.getTrainSenteceVec(1)
+X_train, y_train, senten_len_train = wordVector.getTrainSenteceVec(1)
+X_test, y_test, senten_len_test = wordVector.getTrainSenteceVec(0)
 
-X_test = X_train
 
 TRAIN_EXAMPLES = len(X_train)
-
+TEST_EXAMPLES = len(X_test)
 
 
 
@@ -54,14 +53,14 @@ with graph.as_default():
     senten_len_batch = tf.placeholder(dtype=tf.int32 ,shape=[BATCH_SIZE],name="senten_len_batch")
 
     #lstm instance
-    lstm_forward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_forward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_forward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
+    lstm_forward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
     # lstm_forward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
 
     lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1, lstm_forward_2])
 
-    lstm_backward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_backward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_backward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
+    lstm_backward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
 
     lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1, lstm_backward_2])
 
@@ -73,16 +72,15 @@ with graph.as_default():
         sequence_length=senten_len_batch,
         dtype=tf.float32
     )
-    h_fw=states[0]
-    h_bw = states[1]
-    # h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
-    h = h_fw[0][1]
-    print("h.shape is :",h.shape)
+    states_fw=states[0]
+    states_bw = states[1]
+    #
+    h = states_fw[1][1]
 
     # Fully connected layer
     with tf.name_scope('Fully_connected_layer'):
         W = tf.Variable(
-            tf.truncated_normal([HIDDEN_UNITS_final, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
+            tf.truncated_normal([HIDDEN_UNITS, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
         b = tf.Variable(tf.constant(0., shape=[1]))
         y_hat = tf.nn.xw_plus_b(h, W, b)
         y_hat = tf.squeeze(y_hat)
@@ -147,28 +145,47 @@ with tf.Session(graph=graph) as sess:
     for epoch in range(1,EPOCH+1):
         #results = np.zeros(shape=(TEST_EXAMPLES, 10))
         train_losses=[]
-        accus=[]
-        #test_losses=[]
+        train_accus=[]
+        test_losses=[]
+        test_accus=[]
 
         print "epoch:",epoch
 
         #range最大为7？？？？？？
         for j in range(TRAIN_EXAMPLES/BATCH_SIZE):
-            _,hout, accu, train_loss=sess.run(
-                    fetches=(optimizer,h, accuracy, loss),
+            _,states_fw_out, accu, train_loss=sess.run(
+                    fetches=(optimizer,states_fw, accuracy, loss),
                     feed_dict={
                             x_tru:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                             y_tru:y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                            senten_len_batch:senten_len[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
+                            senten_len_batch:senten_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
 
                         }
             )
-            # print hout
+            # print states_fw_out
             train_losses.append(train_loss)
-            accus.append(accu)
+            train_accus.append(accu)
+
+        for j in range(TEST_EXAMPLES/BATCH_SIZE):
+            _,states_fw_out, accu, train_loss=sess.run(
+                    fetches=(optimizer,states_fw, accuracy, loss),
+                    feed_dict={
+                            x_tru:X_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                            y_tru:y_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                            senten_len_batch:senten_len_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
+
+                        }
+            )
+            # print states_fw_out
+            test_losses.append(train_loss)
+            test_accus.append(accu)
 
 
         print ("average training loss:", (sum(train_losses) / len(train_losses)))
-        print ("accuracy:",sum(accus)/len(accus))
+        print ("train_accuracy:",sum(train_accus)/len(train_accus))
+        print ("\n")
+
+        print ("average test loss:", (sum(test_losses) / len(test_losses)))
+        print ("test_accuracy:", sum(test_accus) / len(test_accus))
         print ("\n")
 
