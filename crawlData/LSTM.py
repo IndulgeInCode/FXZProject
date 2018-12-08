@@ -11,7 +11,7 @@ TIME_STEPS=10
 BATCH_SIZE=124
 HIDDEN_UNITS=5
 LEARNING_RATE=0.3
-EPOCH=80
+EPOCH=100
 # 最后输出分类类别数量
 class_num = 2
 layer_number = 3

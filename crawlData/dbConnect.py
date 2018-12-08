@@ -47,6 +47,15 @@ def getData(begin, end):
     cursor.close()
     return values
 
+def getLongData(begin, end):
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
+    cursor = conn.cursor();
+    sqlsearch = "select * from review where length(content) < 150 and length(content) > 20 limit "+ str(begin) +", "+ str(end)
+    cursor.execute(sqlsearch)
+    values = cursor.fetchall()
+    cursor.close()
+    return values
+
 #
 # create table review (
 #     id bigint(16) AUTO_INCREMENT ,

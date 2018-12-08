@@ -13,6 +13,10 @@ sys.setdefaultencoding('utf-8')
 r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
 maxSeqLength = 250
 EMBEDDING_DIM = 10
+LONG_TRAINTYPE = 3
+LONG_TESTTYPE = 2
+TRAINTYPE = 1
+TESTTYPE = 0
 
 def buildModel():
     # 所有词集合，包括重复词
@@ -40,10 +44,14 @@ def buildModel():
 
 # 将句子变成向量形式
 def getTrainSenteceVec(type):
-    if type == 1:
+    if type == TRAINTYPE:
         data = dbConnect.getData(begin = 0, end = 6000)
-    else :
+    elif type ==  TESTTYPE:
         data = dbConnect.getData(begin=6000, end=12000)
+    elif type == LONG_TRAINTYPE:
+        data = dbConnect.getLongData(begin=0, end=3000)
+    elif type == LONG_TESTTYPE:
+        data = dbConnect.getLongData(begin=3000, end=6000)
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []

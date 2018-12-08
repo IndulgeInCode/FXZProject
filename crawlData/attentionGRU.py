@@ -21,7 +21,7 @@ HIDDEN_SIZE = 150
 ATTENTION_SIZE = 50
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-NUM_EPOCHS = 50  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+NUM_EPOCHS = 80  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/attention_model'
 
@@ -45,15 +45,10 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(GRUCell(HIDDEN_SIZE), GRUCel
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 tf.summary.histogram('RNN_outputs', rnn_outputs)
 
-states_fw = rnn_states[0]
-states_bw = rnn_states[1]
-
-h = tf.concat([states_fw, states_bw], 1)
-
 
 # Attention layer
 with tf.name_scope('Attention_layer'):
-    attention_output, alphas = attention(h, ATTENTION_SIZE, return_alphas=True)
+    attention_output, alphas = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
     tf.summary.histogram('alphas', alphas)
 
 # Dropout
