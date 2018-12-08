@@ -41,15 +41,19 @@ with tf.name_scope('Inputs'):
 
 
 # (Bi-)RNN layer(-s)
-rnn_outputs, _ = bidirectional_dynamic_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE),
+rnn_outputs, rnn_states = bidirectional_dynamic_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE),
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 tf.summary.histogram('RNN_outputs', rnn_outputs)
 
+states_fw = rnn_states[0]
+states_bw = rnn_states[1]
+
+h = tf.concat([states_fw, states_bw], 1)
 
 
 # Attention layer
 with tf.name_scope('Attention_layer'):
-    attention_output, alphas = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+    attention_output, alphas = attention(h, ATTENTION_SIZE, return_alphas=True)
     tf.summary.histogram('alphas', alphas)
 
 # Dropout
