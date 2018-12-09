@@ -116,6 +116,7 @@ with graph.as_default():
 #-------------------------------------------定义 Session---------------------------------------#
 with tf.Session(graph=graph) as sess:
     sess.run(init)
+    average_acc = []
     for epoch in range(1,EPOCH+1):
         #results = np.zeros(shape=(TEST_EXAMPLES, 10))
         train_losses=[]
@@ -156,8 +157,10 @@ with tf.Session(graph=graph) as sess:
 
 
         print ("loss:", (sum(train_losses) / len(train_losses)), "accuracy:",sum(train_accus)/len(train_accus))
-        print ("\n")
-
         print ("test_loss:", (sum(test_losses) / len(test_losses)), "test_accuracy:", sum(test_accus) / len(test_accus))
         print ("\n")
 
+        if(epoch > 80):
+            average_acc.append((sum(test_accus) / len(test_accus)))
+
+    print("The average test accuracy is : ", (sum(average_acc) / len(average_acc)))

@@ -55,7 +55,7 @@ h = tf.concat([states_fw, states_bw], 1)
 
 
 # Dropout
-# drop = tf.nn.dropout(h, keep_prob_ph)
+drop = tf.nn.dropout(h, keep_prob_ph)
 
 
 
@@ -65,7 +65,7 @@ h = tf.concat([states_fw, states_bw], 1)
 with tf.name_scope('Fully_connected_layer'):
     W = tf.Variable(tf.truncated_normal([HIDDEN_SIZE*2, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
     b = tf.Variable(tf.constant(0., shape=[1]))
-    y_hat = tf.nn.xw_plus_b(h, W, b)
+    y_hat = tf.nn.xw_plus_b(drop, W, b)
     y_hat = tf.squeeze(y_hat)
     # tf.summary.histogram('W', W)
 
@@ -93,14 +93,15 @@ saver = tf.train.Saver()
 if __name__ == "__main__":
     with tf.Session(config=session_conf) as sess:
         sess.run(tf.global_variables_initializer())
+        average_acc = []
         print("Start learning...")
-        for epoch in range(EPOCHS):
+        for epoch in range(1, EPOCHS+1):
             loss_train = []
             loss_test = []
             accuracy_train = []
             accuracy_test = []
 
-            print("epoch: {}\t".format(epoch))
+            print("epoch: {}\t".format(epoch+1))
 
             num_batches = TRAIN_EXAMPLES/BATCH_SIZE
             for j in range(num_batches-1):
@@ -129,5 +130,8 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 (sum(loss_train) / len(loss_train)), (sum(loss_test) / len(loss_test)), (sum(accuracy_train) / len(accuracy_train)), (sum(accuracy_test) / len(accuracy_test))
             ))
+            if(epoch > 80):
+                average_acc.append((sum(accuracy_test)/len(accuracy_test)))
         saver.save(sess, MODEL_PATH)
-        print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
+        # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
+        print("The average test accuracy is : ", (sum(average_acc)/len(average_acc)))

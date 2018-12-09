@@ -91,6 +91,7 @@ saver = tf.train.Saver()
 if __name__ == "__main__":
     with tf.Session(config=session_conf) as sess:
         sess.run(tf.global_variables_initializer())
+        average_acc = []
         print("Start learning...")
         for epoch in range(EPOCHS):
             loss_train = 0
@@ -129,7 +130,10 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 loss_train, loss_test, accuracy_train, accuracy_test
             ))
+            if (epoch > 80):
+                average_acc.append((sum(accuracy_test) / len(accuracy_test)))
         # train_writer.close()
         # test_writer.close()
         saver.save(sess, MODEL_PATH)
-        print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
+        # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
+        print("The average test accuracy is : ", (sum(average_acc)/len(average_acc)))
