@@ -104,7 +104,7 @@ if __name__ == "__main__":
             print("epoch: {}\t".format(epoch+1))
 
             num_batches = TRAIN_EXAMPLES/BATCH_SIZE
-            for j in range(num_batches-1):
+            for j in range(num_batches):
                 loss_tr, acc, _ = sess.run([loss, accuracy, optimizer],
                                                     feed_dict={input_data:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],

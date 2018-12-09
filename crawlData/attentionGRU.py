@@ -131,9 +131,9 @@ if __name__ == "__main__":
                 loss_train, loss_test, accuracy_train, accuracy_test
             ))
             if (epoch > 80):
-                average_acc.append((sum(accuracy_test) / len(accuracy_test)))
+                average_acc.append(accuracy_test)
         # train_writer.close()
         # test_writer.close()
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
-        print("The average test accuracy is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test accuracy with attention is : ", (sum(average_acc)/len(average_acc)))
