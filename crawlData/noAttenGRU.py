@@ -25,8 +25,8 @@ DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
 # init data
-X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(3)
-X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(2)
+X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
+X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
 
 
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
             print("epoch: {}\t".format(epoch))
 
             num_batches = X_train.shape[0] // BATCH_SIZE
-            for j in tqdm(range(num_batches-1)):
+            for j in range(num_batches):
                 loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
                                                     feed_dict={input_data:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
@@ -119,11 +119,11 @@ if __name__ == "__main__":
 
             # Testing
             num_batches = X_test.shape[0] // BATCH_SIZE
-            for b in tqdm(range(num_batches-1)):
+            for k in range(num_batches):
                 loss_test_batch, acc = sess.run([loss, accuracy],
-                                                    feed_dict={input_data: X_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
-                                                               target_ph: y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
-                                                               seq_len_ph: seq_len_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
+                                                    feed_dict={input_data: X_train[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
+                                                               target_ph: y_train[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
+                                                               seq_len_ph: seq_len_train[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                keep_prob_ph: 1.0})
                 accuracy_test += acc
                 loss_test += loss_test_batch
