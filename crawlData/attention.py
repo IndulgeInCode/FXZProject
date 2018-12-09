@@ -34,7 +34,7 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
     alphas = tf.nn.softmax(vu, name='alphas')         # (B,T) shape（）
 
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
-    #（1 * 250 * 300）
+    #（256 * 250 * 1）
     a = inputs * tf.expand_dims(alphas, -1)
     # 按行求和（1 * 300）
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)

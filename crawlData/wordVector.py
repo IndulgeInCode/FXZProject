@@ -24,7 +24,7 @@ def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
 
-    data = dbConnect.getTrainData(begin=0,end=12000)
+    data = dbConnect.getData(begin=0,end=12000)
 
     sentences = []
     for x in data:

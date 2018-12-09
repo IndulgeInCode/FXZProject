@@ -32,11 +32,6 @@ TRAIN_EXAMPLES = len(X_train)
 TEST_EXAMPLES = len(X_test)
 
 
-
-#print(X_train.shape)
-#print(y_dummy.shape)
-#print(X_test.shape)
-
 #-----------------------------------------------------------------------------------------------------#
 
 
@@ -112,23 +107,6 @@ with graph.as_default():
     tf.summary.scalar('accuracy', accuracy)
 
 
-    # cross_loss = tf.losses.softmax_cross_entropy(onehot_labels=y_tru,logits=y_hat)
-    # # print(loss.shape)
-    # correct_prediction = tf.equal(y_hat, y_tru)
-    # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-    #
-    # optimizer=tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss=cross_loss)
-    # optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).apply_gradients(zip(grads, tvars))  # 将梯度应用于变量
-
-
-
-    # cross_loss = tf.losses.softmax_cross_entropy(onehot_labels=y_tru, logits=h)
-    #
-    # train_op = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_loss)
-    #
-    # correct_prediction = tf.equal(tf.argmax(h, 1), tf.argmax(y_tru, 1))
-    # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-
     #print(loss.shape)
     session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 
@@ -148,7 +126,7 @@ with tf.Session(graph=graph) as sess:
         print "epoch:",epoch
 
         #range最大为7？？？？？？
-        for j in range(TRAIN_EXAMPLES/BATCH_SIZE):
+        for j in range(TRAIN_EXAMPLES/BATCH_SIZE -1):
             _,states_fw_out, accu, train_loss=sess.run(
                     fetches=(optimizer,states_fw, accuracy, loss),
                     feed_dict={
@@ -162,13 +140,13 @@ with tf.Session(graph=graph) as sess:
             train_losses.append(train_loss)
             train_accus.append(accu)
 
-        for j in range(TEST_EXAMPLES/BATCH_SIZE):
+        for k in range(TEST_EXAMPLES/BATCH_SIZE-1):
             test_accu,test_loss=sess.run(
                     fetches=(accuracy, loss),
                     feed_dict={
-                            x_tru:X_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                            y_tru:y_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                            senten_len_batch:senten_len_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
+                            x_tru:X_test[k*BATCH_SIZE:(k+1)*BATCH_SIZE],
+                            y_tru:y_test[k*BATCH_SIZE:(k+1)*BATCH_SIZE],
+                            senten_len_batch:senten_len_test[k*BATCH_SIZE:(k+1)*BATCH_SIZE]
 
                         }
             )
@@ -178,10 +156,8 @@ with tf.Session(graph=graph) as sess:
 
 
         print ("loss:", (sum(train_losses) / len(train_losses)), "accuracy:",sum(train_accus)/len(train_accus))
-        # print ("train_accuracy:",sum(train_accus)/len(train_accus))
         print ("\n")
 
         print ("test_loss:", (sum(test_losses) / len(test_losses)), "test_accuracy:", sum(test_accus) / len(test_accus))
-        # print ("test_accuracy:", sum(test_accus) / len(test_accus))
         print ("\n")
 
