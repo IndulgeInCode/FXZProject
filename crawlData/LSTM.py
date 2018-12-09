@@ -155,10 +155,9 @@ with tf.Session(graph=graph) as sess:
             test_losses.append(test_loss)
             test_accus.append(test_accu)
 
-
-        print ("loss:", (sum(train_losses) / len(train_losses)), "accuracy:",sum(train_accus)/len(train_accus))
-        print ("test_loss:", (sum(test_losses) / len(test_losses)), "test_accuracy:", sum(test_accus) / len(test_accus))
-        print ("\n")
+        print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
+            (sum(train_losses) / len(train_losses)), (sum(test_losses) / len(test_losses)), (sum(train_accus)/len(train_accus)), (sum(test_accus) / len(test_accus))
+        ))
 
         if(epoch > 50):
             average_acc.append((sum(test_accus) / len(test_accus)))

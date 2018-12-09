@@ -18,7 +18,7 @@ INDEX_FROM = 3
 SEQUENCE_LENGTH = 250
 EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
-ATTENTION_SIZE = 300
+ATTENTION_SIZE = 80
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
 EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
             # Testing
             num_batches = X_test.shape[0] // BATCH_SIZE
-            for k in tqdm(range(num_batches)):
+            for k in range(num_batches):
                 loss_test_batch, acc = sess.run([loss, accuracy],
                                                     feed_dict={input_data: X_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                target_ph: y_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
