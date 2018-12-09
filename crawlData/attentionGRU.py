@@ -18,10 +18,10 @@ INDEX_FROM = 3
 SEQUENCE_LENGTH = 250
 EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
-ATTENTION_SIZE = 50
+ATTENTION_SIZE = 100
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-NUM_EPOCHS = 80  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 120  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/attention_model'
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     with tf.Session(config=session_conf) as sess:
         sess.run(tf.global_variables_initializer())
         print("Start learning...")
-        for epoch in range(NUM_EPOCHS):
+        for epoch in range(EPOCHS):
             loss_train = 0
             loss_test = 0
             accuracy_train = 0
