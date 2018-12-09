@@ -25,8 +25,8 @@ DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
 # init data
-X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
-X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
+X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(3)
+X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(2)
 TRAIN_EXAMPLES = len(X_train)
 TEST_EXAMPLES = len(X_test)
 
