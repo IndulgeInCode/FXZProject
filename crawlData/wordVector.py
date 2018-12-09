@@ -75,7 +75,7 @@ def getTrainSenteceVec(type):
         seq_length.append(count)
         x.append(sentenVec)
 
-        if(row[2] == 3):
+        if(row[3] > 2):
             y.append(1)
         else :
             y.append(0)

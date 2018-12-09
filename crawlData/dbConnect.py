@@ -28,7 +28,7 @@ def connectSql(user, password, host):
 
 
 def insertDataInList(data):
-    conn = mysql.connector.connect(host=host, user=user, password=password, database=database)
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
 
     for value in data:
