@@ -18,7 +18,7 @@ INDEX_FROM = 3
 SEQUENCE_LENGTH = 250
 EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
-ATTENTION_SIZE = 80
+ATTENTION_SIZE = 50
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
 EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
@@ -136,5 +136,5 @@ if __name__ == "__main__":
         # test_writer.close()
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
-        print("The average test accuracy with attention is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
         print("The average test accuracy with attention + GRU is : ", max(average_acc))

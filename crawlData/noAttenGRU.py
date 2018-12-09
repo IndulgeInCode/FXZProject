@@ -128,7 +128,7 @@ if __name__ == "__main__":
             # loss_test /= num_batches
 
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
-                (sum(loss_train) / len(loss_train)), (sum(loss_test) / len(loss_test)), (sum(accuracy_train) / len(accuracy_train)), (sum(accuracy_test) / len(accuracy_test))
+                (sum(loss_train)/len(loss_train)), (sum(loss_test)/len(loss_test)), (sum(accuracy_train)/len(accuracy_train)), (sum(accuracy_test)/len(accuracy_test))
             ))
             if(epoch > 50):
                 average_acc.append((sum(accuracy_test)/len(accuracy_test)))
