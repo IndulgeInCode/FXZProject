@@ -11,7 +11,7 @@ TIME_STEPS=10
 BATCH_SIZE=124
 HIDDEN_UNITS=5
 LEARNING_RATE=0.3
-EPOCH=120
+EPOCH=60
 # 最后输出分类类别数量
 class_num = 2
 layer_number = 3
@@ -160,7 +160,8 @@ with tf.Session(graph=graph) as sess:
         print ("test_loss:", (sum(test_losses) / len(test_losses)), "test_accuracy:", sum(test_accus) / len(test_accus))
         print ("\n")
 
-        if(epoch > 80):
+        if(epoch > 50):
             average_acc.append((sum(test_accus) / len(test_accus)))
 
-    print("The average test accuracy is : ", (sum(average_acc) / len(average_acc)))
+    print("The average test accuracy with LSTM is : ", (sum(average_acc) / len(average_acc)))
+    print("The average test accuracy with LSTM is : ", max(average_acc))

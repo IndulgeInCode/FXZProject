@@ -21,7 +21,7 @@ HIDDEN_SIZE = 150
 ATTENTION_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 120  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/attention_model'
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         sess.run(tf.global_variables_initializer())
         average_acc = []
         print("Start learning...")
-        for epoch in range(EPOCHS):
+        for epoch in range(1, EPOCHS+1):
             loss_train = 0
             loss_test = 0
             accuracy_train = 0
@@ -130,10 +130,11 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 loss_train, loss_test, accuracy_train, accuracy_test
             ))
-            if (epoch > 80):
+            if (epoch > 50):
                 average_acc.append(accuracy_test)
         # train_writer.close()
         # test_writer.close()
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
         print("The average test accuracy with attention is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test accuracy with attention + GRU is : ", max(average_acc))

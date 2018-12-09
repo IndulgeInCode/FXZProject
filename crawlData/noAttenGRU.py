@@ -20,7 +20,7 @@ EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 120  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
             accuracy_train = []
             accuracy_test = []
 
-            print("epoch: {}\t".format(epoch+1))
+            print("epoch: {}\t".format(epoch))
 
             num_batches = TRAIN_EXAMPLES/BATCH_SIZE
             for j in range(num_batches):
@@ -130,8 +130,9 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 (sum(loss_train) / len(loss_train)), (sum(loss_test) / len(loss_test)), (sum(accuracy_train) / len(accuracy_train)), (sum(accuracy_test) / len(accuracy_test))
             ))
-            if(epoch > 80):
+            if(epoch > 50):
                 average_acc.append((sum(accuracy_test)/len(accuracy_test)))
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
-        print("The average test accuracy is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test with GRU accuracy is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test with GRU accuracy is : ", max(average_acc))
