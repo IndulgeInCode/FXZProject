@@ -50,11 +50,23 @@ def getData(begin, end):
 def getLongData(begin, end):
     conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
-    sqlsearch = "select * from review where length(content) < 150 and length(content) > 20 limit "+ str(begin) +", "+ str(end)
+    sqlsearch = "select * from review where char_length(content) > 50 and char_length(content) < 150 limit "+ str(begin) +", "+ str(end)
     cursor.execute(sqlsearch)
     values = cursor.fetchall()
     cursor.close()
     return values
+
+def getLengthStatistic():
+    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
+    cursor = conn.cursor();
+    number = []
+    for i in range(500):
+        sqlsearch = "select count(*) from review where char_length(content)="+str(i)
+        cursor.execute(sqlsearch)
+        value = cursor.fetchall()
+        number.extend(value[0])
+    cursor.close()
+    return number
 
 #
 # create table review (

@@ -6,6 +6,8 @@ import sys  # 提供了许多函数和变量来处理 Python 运行时环境的�
 import jieba
 import numpy as np
 import re
+import matplotlib.pyplot as plt
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -49,9 +51,9 @@ def getTrainSenteceVec(type):
     elif type ==  TESTTYPE:
         data = dbConnect.getData(begin=6000, end=12000)
     elif type == LONG_TRAINTYPE:
-        data = dbConnect.getLongData(begin=0, end=3000)
+        data = dbConnect.getLongData(begin=0, end=2000)
     elif type == LONG_TESTTYPE:
-        data = dbConnect.getLongData(begin=3000, end=6000)
+        data = dbConnect.getLongData(begin=2000, end=3800)
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
@@ -80,8 +82,21 @@ def getTrainSenteceVec(type):
 
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
 
+def getContentStatistic():
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.figure(figsize=(20, 10))
+    x = range(500)
+    y = dbConnect.getLengthStatistic()
+    plt.plot(x, y, 'k-', mec='k', label=u'length', lw=2)
+
+    plt.grid(True, ls='--')
+    plt.legend(loc='upper right')
+    plt.title('Content length')
+    plt.show()
+
 
 if __name__ == '__main__':
-    buildModel()
+    getContentStatistic()
     # result = getTrainSenteceVec()
     # print result[0]
