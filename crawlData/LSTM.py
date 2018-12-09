@@ -11,7 +11,7 @@ TIME_STEPS=10
 BATCH_SIZE=124
 HIDDEN_UNITS=5
 LEARNING_RATE=0.3
-EPOCH=100
+EPOCH=120
 # 最后输出分类类别数量
 class_num = 2
 layer_number = 3
@@ -163,8 +163,8 @@ with tf.Session(graph=graph) as sess:
             train_accus.append(accu)
 
         for j in range(TEST_EXAMPLES/BATCH_SIZE):
-            _,states_fw_out, accu, train_loss=sess.run(
-                    fetches=(optimizer,states_fw, accuracy, loss),
+            test_accu,test_loss=sess.run(
+                    fetches=(accuracy, loss),
                     feed_dict={
                             x_tru:X_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                             y_tru:y_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
@@ -173,8 +173,8 @@ with tf.Session(graph=graph) as sess:
                         }
             )
             # print states_fw_out
-            test_losses.append(train_loss)
-            test_accus.append(accu)
+            test_losses.append(test_loss)
+            test_accus.append(test_accu)
 
 
         print ("loss:", (sum(train_losses) / len(train_losses)), "accuracy:",sum(train_accus)/len(train_accus))
