@@ -41,10 +41,10 @@ with tf.name_scope('Inputs'):
 
 cell_fw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_fw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1])
+lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw1])
 cell_bw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_bw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1])
+lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
 
 # (Bi-)RNN layer(-s)
 rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
@@ -53,8 +53,8 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
 
 # rnn_states = tf.concat(rnn_states, 2)
 
-states_fw = rnn_states[0][0]
-states_bw = rnn_states[1][0]
+states_fw = rnn_states[0][1]
+states_bw = rnn_states[1][1]
 
 
 h = tf.concat([states_fw, states_bw], 1)
