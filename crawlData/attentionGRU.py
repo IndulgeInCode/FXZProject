@@ -136,7 +136,7 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 loss_train, loss_test, accuracy_train, accuracy_test
             ))
-            if (epoch > 50):
+            if (epoch > 45):
                 average_acc.append(accuracy_test)
         # train_writer.close()
         # test_writer.close()
