@@ -20,7 +20,7 @@ EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 100  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
@@ -41,10 +41,10 @@ with tf.name_scope('Inputs'):
 
 cell_fw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_fw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
+lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1])
 cell_bw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_bw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
+lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1])
 
 # (Bi-)RNN layer(-s)
 rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
@@ -138,7 +138,7 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 (sum(loss_train)/len(loss_train)), (sum(loss_test)/len(loss_test)), (sum(accuracy_train)/len(accuracy_train)), (sum(accuracy_test)/len(accuracy_test))
             ))
-            if(epoch > 70):
+            if(epoch > 45):
                 average_acc.append((sum(accuracy_test)/len(accuracy_test)))
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
