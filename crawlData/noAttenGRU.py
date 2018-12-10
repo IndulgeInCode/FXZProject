@@ -41,29 +41,37 @@ with tf.name_scope('Inputs'):
 
 cell_fw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_fw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw1])
+cell_fw3 = rnn.GRUCell(HIDDEN_SIZE)
+gru_forward = rnn.MultiRNNCell(cells=[cell_fw1,cell_fw2])
 cell_bw1 = rnn.GRUCell(HIDDEN_SIZE)
 cell_bw2 = rnn.GRUCell(HIDDEN_SIZE)
-lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
+cell_bw3 = rnn.GRUCell(HIDDEN_SIZE)
+gru_backward = rnn.MultiRNNCell(cells=[cell_bw1,cell_bw2])
 
 # (Bi-)RNN layer(-s)
-rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
+rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 
 
-# rnn_states = tf.concat(rnn_states, 2)
 
-states_fw = rnn_states[0][1]
-states_bw = rnn_states[1][1]
+# rnn_states = tf.concat(rnn_states, 3)
+#
+# states_fw = rnn_states[0][0]
+# states_bw = rnn_states[1][0]
 
 
-h = tf.concat([states_fw, states_bw], 1)
 
 
 
 # Dropout
-drop = tf.nn.dropout(h, keep_prob_ph)
+drop = tf.nn.dropout(rnn_states, keep_prob_ph)
+print ("drop shape is ",drop.shape)
 
+states_fw = rnn_states[0][1]
+states_bw = rnn_states[1][1]
+
+h = tf.concat([states_fw, states_bw], 1)
+print ("h shape is ",h.shape)
 
 
 
@@ -72,7 +80,7 @@ drop = tf.nn.dropout(h, keep_prob_ph)
 with tf.name_scope('Fully_connected_layer'):
     W = tf.Variable(tf.truncated_normal([HIDDEN_SIZE*2, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
     b = tf.Variable(tf.constant(0., shape=[1]))
-    y_hat = tf.nn.xw_plus_b(drop, W, b)
+    y_hat = tf.nn.xw_plus_b(h, W, b)
     y_hat = tf.squeeze(y_hat)
     # tf.summary.histogram('W', W)
 
