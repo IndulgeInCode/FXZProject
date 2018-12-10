@@ -53,10 +53,9 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
 
 # rnn_states = tf.concat(rnn_states, 2)
 
-states_fw = rnn_states[1][0]
-states_bw = rnn_states[1][1]
+states_fw = rnn_states[0][0]
+states_bw = rnn_states[1][0]
 
-print ("states_fw.shape = ", states_fw.shape)
 
 h = tf.concat([states_fw, states_bw], 1)
 
