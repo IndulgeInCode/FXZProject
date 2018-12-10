@@ -51,9 +51,9 @@ def getTrainSenteceVec(type):
     elif type ==  TESTTYPE:
         data = dbConnect.getData(begin=6000, end=12000)
     elif type == LONG_TRAINTYPE:
-        data = dbConnect.getLongData(begin=0, end=2000)
+        data = dbConnect.getLongData(begin=0, end=4000)
     elif type == LONG_TESTTYPE:
-        data = dbConnect.getLongData(begin=2000, end=3800)
+        data = dbConnect.getLongData(begin=4000, end=7400)
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
