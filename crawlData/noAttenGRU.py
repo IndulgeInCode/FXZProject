@@ -67,10 +67,10 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
 drop = tf.nn.dropout(rnn_states, keep_prob_ph)
 print ("drop shape is ",drop.shape)
 
-states_fw = rnn_states[0][1]
-states_bw = rnn_states[1][1]
+states_fw = rnn_states[0]
+states_bw = rnn_states[1]
 
-h = tf.concat([states_fw, states_bw], 1)
+h = tf.concat([states_fw[-1], states_bw[-1]], 1)
 print ("h shape is ",h.shape)
 
 
