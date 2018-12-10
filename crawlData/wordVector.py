@@ -24,7 +24,7 @@ def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
 
-    data = dbConnect.getData(begin=0,end=12000)
+    data = dbConnect.getData(begin=0,end=22000)
 
     sentences = []
     for x in data:
@@ -47,9 +47,9 @@ def buildModel():
 # 将句子变成向量形式
 def getTrainSenteceVec(type):
     if type == TRAINTYPE:
-        data = dbConnect.getData(begin = 0, end = 6000)
+        data = dbConnect.getData(begin = 0, end = 13000)
     elif type ==  TESTTYPE:
-        data = dbConnect.getData(begin=6000, end=12000)
+        data = dbConnect.getData(begin=13000, end=20000)
     elif type == LONG_TRAINTYPE:
         data = dbConnect.getLongData(begin=0, end=3000)
     elif type == LONG_TESTTYPE:
@@ -97,6 +97,7 @@ def getContentStatistic():
 
 
 if __name__ == '__main__':
-    getContentStatistic()
+    # getContentStatistic()
+    buildModel()
     # result = getTrainSenteceVec()
     # print result[0]
