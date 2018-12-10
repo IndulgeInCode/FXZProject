@@ -68,7 +68,7 @@ with tf.name_scope('Attention_layer'):
 with tf.name_scope('Fully_connected_layer'):
     W = tf.Variable(tf.truncated_normal([HIDDEN_SIZE * 2, 1], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
     b = tf.Variable(tf.constant(0., shape=[1]))
-    y_hat = tf.nn.xw_plus_b(drop, W, b)
+    y_hat = tf.nn.xw_plus_b(attention_output, W, b)
     y_hat = tf.squeeze(y_hat)
     tf.summary.histogram('W', W)
 
