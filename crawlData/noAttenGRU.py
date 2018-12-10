@@ -20,13 +20,13 @@ EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 80  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
 # init data
-X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(3)
-X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(2)
+X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
+X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
 TRAIN_EXAMPLES = len(X_train)
 TEST_EXAMPLES = len(X_test)
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
                 (sum(loss_train)/len(loss_train)), (sum(loss_test)/len(loss_test)), (sum(accuracy_train)/len(accuracy_train)), (sum(accuracy_test)/len(accuracy_test))
             ))
-            if(epoch > 45):
+            if(epoch > 60):
                 average_acc.append((sum(accuracy_test)/len(accuracy_test)))
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
