@@ -61,8 +61,8 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
 
 
 # Dropout
-drop = tf.nn.dropout(rnn_states, keep_prob_ph)
-print ("drop shape is ",drop.shape)
+# drop = tf.nn.dropout(rnn_states, 1.0)
+# print ("drop shape is ",drop.shape)
 
 states_fw = rnn_states[0]
 states_bw = rnn_states[1]
