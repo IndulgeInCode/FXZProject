@@ -50,7 +50,7 @@ def getData(begin, end):
 def getLongData(begin, end):
     conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
-    sqlsearch = "select * from review where char_length(content) > 50 and char_length(content) < 150 limit "+ str(begin) +", "+ str(end)
+    sqlsearch = "select * from review where char_length(content) > 70 limit "+ str(begin) +", "+ str(end)
     cursor.execute(sqlsearch)
     values = cursor.fetchall()
     cursor.close()
