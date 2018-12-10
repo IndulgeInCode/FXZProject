@@ -47,9 +47,9 @@ def buildModel():
 # 将句子变成向量形式
 def getTrainSenteceVec(type):
     if type == TRAINTYPE:
-        data = dbConnect.getData(begin = 0, end = 13000)
+        data = dbConnect.getData(begin = 0, end = 8000)
     elif type ==  TESTTYPE:
-        data = dbConnect.getData(begin=13000, end=20000)
+        data = dbConnect.getData(begin=8000, end=15000)
     elif type == LONG_TRAINTYPE:
         data = dbConnect.getLongData(begin=0, end=3000)
     elif type == LONG_TESTTYPE:
