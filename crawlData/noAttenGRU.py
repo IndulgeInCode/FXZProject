@@ -5,7 +5,7 @@
 import numpy as np
 import tensorflow as tf
 from keras.datasets import imdb
-from tensorflow.contrib.rnn import GRUCell
+import tensorflow.contrib.rnn as rnn
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from tqdm import tqdm
 
@@ -20,7 +20,7 @@ EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 100  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 MODEL_PATH = './model/noattention_model'
 
@@ -39,9 +39,15 @@ with tf.name_scope('Inputs'):
     seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
 
+cell_fw1 = rnn.GRUCell(HIDDEN_SIZE)
+cell_fw2 = rnn.GRUCell(HIDDEN_SIZE)
+lstm_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
+cell_bw1 = rnn.GRUCell(HIDDEN_SIZE)
+cell_bw2 = rnn.GRUCell(HIDDEN_SIZE)
+lstm_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
 
 # (Bi-)RNN layer(-s)
-rnn_outputs, rnn_states = bidirectional_dynamic_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE),
+rnn_outputs, rnn_states = bidirectional_dynamic_rnn(lstm_forward, lstm_backward,
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 
 
