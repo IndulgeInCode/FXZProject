@@ -39,13 +39,13 @@ with tf.name_scope('Inputs'):
     seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
 
-cell_fw1 = rnn.GRUCell(HIDDEN_SIZE)
-cell_fw2 = rnn.GRUCell(HIDDEN_SIZE)
-cell_fw3 = rnn.GRUCell(HIDDEN_SIZE)
+cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+cell_fw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+cell_fw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
 gru_forward = rnn.MultiRNNCell(cells=[cell_fw1,cell_fw2])
-cell_bw1 = rnn.GRUCell(HIDDEN_SIZE)
-cell_bw2 = rnn.GRUCell(HIDDEN_SIZE)
-cell_bw3 = rnn.GRUCell(HIDDEN_SIZE)
+cell_bw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+cell_bw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
 gru_backward = rnn.MultiRNNCell(cells=[cell_bw1,cell_bw2])
 
 # (Bi-)RNN layer(-s)
@@ -58,9 +58,6 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
 #
 # states_fw = rnn_states[0][0]
 # states_bw = rnn_states[1][0]
-
-
-
 
 
 # Dropout
