@@ -103,7 +103,7 @@ session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 saver = tf.train.Saver()
 
 if __name__ == "__main__":
-    with tf.Session(config=session_conf) as sess:
+    with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         average_acc = []
         print("Start learning...")

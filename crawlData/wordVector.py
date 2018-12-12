@@ -7,6 +7,7 @@ import jieba
 import numpy as np
 import re
 import matplotlib.pyplot as plt
+import hierarchicalAttention as hAT
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -49,17 +50,37 @@ def getTrainSenteceVec(type):
     if type == TRAINTYPE:
         data = dbConnect.getData(begin = 0, end = 8000)
     elif type ==  TESTTYPE:
-        data = dbConnect.getData(begin=8000, end=15000)
-    elif type == LONG_TRAINTYPE:
-        data = dbConnect.getLongData(begin=0, end=3000)
-    elif type == LONG_TESTTYPE:
-        data = dbConnect.getLongData(begin=3000, end=6000)
+        data = dbConnect.getData(begin=8000, end=7000)
+
+    return getVec(data)
+
+#将获取长数据
+def getLongRecord(type):
+    if type == TRAINTYPE:
+        longData = dbConnect.getLongData(begin=0, end=8000)
+    elif type == TESTTYPE:
+        longData = dbConnect.getLongData(begin=8000, end=7000)
+
+    return getVec(longData)
+
+#获取短数据
+def getShortRecord(type):
+    if type == TRAINTYPE:
+        shortData = dbConnect.getShortData(begin=0, end=4000)
+    elif type == TESTTYPE:
+        shortData = dbConnect.getShortData(begin=4000, end=4000)
+
+    return getVec(shortData)
+
+
+
+def getVec(data):
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
     y = []
     seq_length = []
-    count = 0
+
     # 遍历每条数据，并转换为向量形式
     for row in data:
         sentence = row[1]
@@ -94,6 +115,8 @@ def getContentStatistic():
     plt.legend(loc='upper right')
     plt.title('Content length')
     plt.show()
+
+
 
 
 if __name__ == '__main__':
