@@ -106,12 +106,12 @@ def attenForLong(inputs, states, attention_size, time_major=False, return_alphas
 
     hidden_size = inputs.shape[2].value  # D value - hidden size of the RNN layer
     #long输入
-    inputs_long = inputs[:1000]
+    inputs_long = inputs[:1500]
     #short输入
     states_fw = states[0]
     states_bw = states[1]
     states_h = tf.concat([states_fw[-1], states_bw[-1]], 1)
-    inputs_short = states_h[1000:]
+    inputs_short = states_h[1500:]
 
     # Trainable parameters
     w_omega = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
