@@ -33,10 +33,9 @@ def insertDataInList(data):
 
     for value in data:
         # id = generate_gid()
-        if(not getRecordByContent(value["content"])):
-            cursor.execute('insert into review (content, score, sentiment) values (%s, %s, %s)',[value["content"], value["score"], value["sentiment"]])
-            print cursor.rowcount
-            conn.commit()
+        cursor.execute('insert into review (content, score, sentiment) values (%s, %s, %s)',[value["content"], value["score"], value["sentiment"]])
+        print cursor.rowcount
+        conn.commit()
     cursor.close()
 
 def getData(begin, end):
@@ -51,20 +50,12 @@ def getData(begin, end):
 def getLongData(begin, end):
     conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
-    sqlsearch = "select * from (select * from review where char_length(content) >= 10 limit "+ str(begin) +", "+ str(end)+" ) da order by char_length(da.content) desc"
+    sqlsearch = "select * from (select * from review where char_length(content) >= 20 limit "+ str(begin) +", "+ str(end)+" ) da order by char_length(da.content) desc"
     cursor.execute(sqlsearch)
     values = cursor.fetchall()
     cursor.close()
     return values
 
-def getShortData(begin, end):
-    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
-    cursor = conn.cursor();
-    sqlsearch = "select * from review where char_length(content) < 100 limit "+ str(begin) +", "+ str(end)
-    cursor.execute(sqlsearch)
-    values = cursor.fetchall()
-    cursor.close()
-    return values
 
 def getLengthStatistic():
     conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
@@ -98,18 +89,6 @@ def getRecordByContent(content):
     cursor.close()
     return value
 
-def getSplitedRecord():
-    conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
-    cursor = conn.cursor();
-
-    sqlsearch = "select * from review where char_length(content) >= 80"
-    cursor.execute(sqlsearch)
-    long = cursor.fetchall()
-    sqlsearch = "select * from review where char_length(content) < 80"
-    cursor.execute(sqlsearch)
-    short = cursor.fetchall()
-    cursor.close()
-    return long, short
 
 
 #

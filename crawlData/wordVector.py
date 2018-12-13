@@ -63,15 +63,6 @@ def getLongRecord(type):
 
     return getVec(longData)
 
-#获取短数据
-def getShortRecord(type):
-    if type == TRAINTYPE:
-        shortData = dbConnect.getShortData(begin=0, end=4000)
-    elif type == TESTTYPE:
-        shortData = dbConnect.getShortData(begin=4000, end=4000)
-
-    return getVec(shortData)
-
 
 
 def getVec(data):

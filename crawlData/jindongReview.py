@@ -64,8 +64,8 @@ def getProductIdByCategre(cat):
 
 
 if __name__ == '__main__':
-    # ids = getProductIdByCategre('9987,653,655&page=3')
-    # ids.extend(getProductIdByCategre('670,671,672&page=3'))
+    # ids = getProductIdByCategre('9987,653,655&page=1')
+    # ids.extend(getProductIdByCategre('670,671,672&page=1'))
     ids = getProductIdByCategre('670,686,690&page=1')
     ids.extend(getProductIdByCategre('737,794,798&page=1'))
     for id in ids:

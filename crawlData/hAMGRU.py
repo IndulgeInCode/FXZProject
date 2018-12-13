@@ -49,6 +49,7 @@ X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
 X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
 
 
+
 # Different placeholders
 with tf.name_scope('Inputs'):
     input_data = tf.placeholder(tf.float32, [None, SEQUENCE_LENGTH, EMBEDDING_DIM], name='input_data')
@@ -159,3 +160,21 @@ if __name__ == "__main__":
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
         print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
         print("The average test accuracy with attention + GRU is : ", max(average_acc))
+
+
+def netGenerator(inputs, seq_len):
+    cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_fw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_fw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    gru_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
+    cell_bw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_bw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    gru_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
+
+
+    # (Bi-)RNN layer(-s)
+    rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
+                            inputs=inputs, sequence_length=seq_len, dtype=tf.float32)
+
+    return rnn_outputs
