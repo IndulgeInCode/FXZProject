@@ -45,8 +45,8 @@ DELTA = 0.5
 # seq_len_train = tf.concat([seq_len_Long_train, seq_len_Short_train],0)
 # seq_len_test = tf.concat([seq_len_Long_test, seq_len_Short_test],0)
 
-X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
-X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
+X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
+X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
 
 
 
