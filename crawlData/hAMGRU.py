@@ -12,7 +12,7 @@ from tqdm import tqdm
 from attention import attention
 from utils import get_vocabulary_size, fit_in_vocabulary, zero_pad, batch_generator
 import wordVector
-import hierarchicalAttention as hAT
+import hierarchicalAttention as hAtten
 
 NUM_WORDS = 10000
 INDEX_FROM = 3
@@ -24,29 +24,12 @@ KEEP_PROB = 0.5
 BATCH_SIZE = 256
 EPOCHS = 20  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
+MODEL_PATH = './model/attention_model'
 
 # init data
-# XLong_train, yLong_train, seq_len_Long_train = wordVector.getLongRecord(1)
-# XLong_test, yLong_test, seq_len_Long_test = wordVector.getLongRecord(0)
-#
-# XShor_train, yShort_train, seq_len_Short_train = wordVector.getShortRecord(1)
-# XShort_test, yShort_test, seq_len_Short_test = wordVector.getShortRecord(0)
-#
-# long_train_len = [len(seq_len_Long_train)]
-# long_test_len = [len(seq_len_Long_test)]
-#
-#
-#
-#
-# X_train = tf.concat([XLong_train, XShor_train], 0)
-# y_train = tf.concat([yLong_train, yShort_train],0)
-# X_test = tf.concat([XLong_test, XShort_test],0)
-# y_test = tf.concat([yLong_test, yShort_test],0)
-# seq_len_train = tf.concat([seq_len_Long_train, seq_len_Short_train],0)
-# seq_len_test = tf.concat([seq_len_Long_test, seq_len_Short_test],0)
+X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
+X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
 
-X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
-X_test, y_test, seq_len_test = wordVector.getTrainSenteceVec(0)
 
 
 
@@ -69,13 +52,16 @@ gru_backward = rnn.MultiRNNCell(cells=[cell_bw1,cell_bw2])
 # (Bi-)RNN layer(-s)
 rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
-
+# tf.summary.histogram('RNN_outputs', rnn_outputs)
 
 
 # Attention layer
 with tf.name_scope('Attention_layer'):
-    attention_output = hAT.attenForLong(rnn_outputs, rnn_states, ATTENTION_SIZE)
-    # tf.summary.histogram('alphas', alphas)
+    attention_output, alphas = hAtten.attenForLong(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+    tf.summary.histogram('alphas', alphas)
+
+# Dropout
+# drop = tf.nn.dropout(attention_output, keep_prob_ph)
 
 
 
@@ -85,7 +71,7 @@ with tf.name_scope('Fully_connected_layer'):
     b = tf.Variable(tf.constant(0., shape=[1]))
     y_hat = tf.nn.xw_plus_b(attention_output, W, b)
     y_hat = tf.squeeze(y_hat)
-    # tf.summary.histogram('W', W)
+    tf.summary.histogram('W', W)
 
 with tf.name_scope('Metrics'):
     # Cross-entropy loss and optimizer initialization
@@ -95,9 +81,9 @@ with tf.name_scope('Metrics'):
 
     # Accuracy metric
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat)), target_ph), tf.float32))
-    # tf.summary.scalar('accuracy', accuracy)
+    tf.summary.scalar('accuracy', accuracy)
 
-# merged = tf.summary.merge_all()
+merged = tf.summary.merge_all()
 
 # Batch generators
 train_batch_generator = batch_generator(X_train, y_train, BATCH_SIZE)
@@ -112,7 +98,7 @@ session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 saver = tf.train.Saver()
 
 if __name__ == "__main__":
-    with tf.Session(config=session_conf) as sess:
+    with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         average_acc = []
         print("Start learning...")
@@ -126,7 +112,7 @@ if __name__ == "__main__":
 
             num_batches = X_train.shape[0] // BATCH_SIZE
             for j in range(num_batches):
-                loss_tr, acc, _ = sess.run([loss, accuracy, optimizer],
+                loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
                                                     feed_dict={input_data:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                seq_len_ph: seq_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
@@ -157,24 +143,7 @@ if __name__ == "__main__":
                 average_acc.append(accuracy_test)
         # train_writer.close()
         # test_writer.close()
+        saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
         print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
         print("The average test accuracy with attention + GRU is : ", max(average_acc))
-
-
-def netGenerator(inputs, seq_len):
-    cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_fw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_fw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    gru_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
-    cell_bw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_bw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    gru_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
-
-
-    # (Bi-)RNN layer(-s)
-    rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
-                            inputs=inputs, sequence_length=seq_len, dtype=tf.float32)
-
-    return rnn_outputs
