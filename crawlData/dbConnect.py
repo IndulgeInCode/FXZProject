@@ -41,7 +41,7 @@ def insertDataInList(data):
 def getData(begin, end):
     conn = mysql.connector.connect(host=host, user=user, password=password, database=database, auth_plugin=auth_plugin)
     cursor = conn.cursor();
-    sqlsearch = "select * from review limit "+ str(begin) +", "+ str(end)
+    sqlsearch = "select * from review where char_length(content) < 100 limit "+ str(begin) +", "+ str(end)
     cursor.execute(sqlsearch)
     values = cursor.fetchall()
     cursor.close()
