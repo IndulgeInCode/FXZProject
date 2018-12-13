@@ -57,7 +57,7 @@ rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
 
 # Attention layer
 with tf.name_scope('Attention_layer'):
-    attention_output, alphas = hAtten.attenForLong(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+    attention_output, alphas = hAtten.attenForLong(rnn_outputs, rnn_states, ATTENTION_SIZE, return_alphas=True)
     tf.summary.histogram('alphas', alphas)
 
 # Dropout
