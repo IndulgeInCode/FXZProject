@@ -3,30 +3,31 @@
 import tensorflow as tf
 import re
 import dbConnect
+import numpy as np
 
-BUCKETNUMBER = 4
-r = "\n|。"
+BUCKET_LENGTH = 4
 
-def eplitSentence(sentence):
-    sentence = re.split(r, sentence[1])
+def splitSentence(sentence):
+    r = re.compile(u"\n|。")
+
+    sentence = re.split(r, sentence)
 
     sentence_len = len(sentence)
     result = []
-    count = sentence_len%BUCKETNUMBER
-    for i in range(count):
-        temp1 = ""
-        for j in range(sentence_len/BUCKETNUMBER + 1):
-            temp1 += sentence.pop()
+    temp = []
+    batchnumber = sentence_len/BUCKET_LENGTH
 
-        result.insert(0, temp1)
+    for i in range(BUCKET_LENGTH):
+        temp.append(sentence[i*batchnumber : (i+1)*batchnumber])
 
-    for i in range(BUCKETNUMBER - count):
-        temp2 = ""
-        for j in range(sentence_len/BUCKETNUMBER):
-            temp2 += sentence.pop()
-        result.insert(0, temp2)
+    for k in temp:
+        str = ''
+        for h in k:
+            str += h
+        result.append(str)
 
-    return result
+
+    return np.array(result)
 
 def attenForLong(inputs, states, attention_size, time_major=False, return_alphas=False):
 
@@ -81,8 +82,8 @@ def attenForLong(inputs, states, attention_size, time_major=False, return_alphas
 
 
 if __name__ == '__main__':
-    value = dbConnect.getRecordById(3249)
-    result = eplitSentence(value[0][1])
+    value = dbConnect.getRecordById(975)
+    result = splitSentence(value[0][1])
 
     print result
 

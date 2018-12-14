@@ -15,11 +15,13 @@ sys.setdefaultencoding('utf-8')
 # 正则过滤表达式
 r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
 maxSeqLength = 250
+minSeqLength = 100
 EMBEDDING_DIM = 10
 LONG_TRAINTYPE = 3
 LONG_TESTTYPE = 2
 TRAINTYPE = 1
 TESTTYPE = 0
+BUCKET_LEN = 4
 
 def buildModel():
     # 所有词集合，包括重复词
@@ -61,7 +63,7 @@ def getLongRecord(type):
     elif type == TESTTYPE:
         longData = dbConnect.getLongData(begin=8000, end=7000)
 
-    return getVec(longData)
+    return getSplitVec(longData)
 
 
 
@@ -74,11 +76,11 @@ def getVec(data):
 
     # 遍历每条数据，并转换为向量形式
     for row in data:
+        sentenVec = np.zeros([maxSeqLength, EMBEDDING_DIM], dtype='float32')
         sentence = row[1]
         sentence = re.sub(r, '', str(sentence))
         se_list = jieba.cut(sentence)
 
-        sentenVec = np.zeros([maxSeqLength,EMBEDDING_DIM], dtype='float32')
         count = 0
         for out in se_list:
             if (count < maxSeqLength and out in model):
@@ -92,6 +94,41 @@ def getVec(data):
         else :
             y.append(0)
 
+    return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
+
+def getSplitVec(data):
+    model = Word2Vec.load('word2vecModel/word2vecModel')
+    # print (model[u'罗技'])
+    x = []
+    y = []
+    seq_length = []
+
+    # 遍历每条数据，并转换为向量形式
+    for row in data:
+        sentenVec = np.zeros([BUCKET_LEN, minSeqLength, EMBEDDING_DIM], dtype='float32')
+        sen_cut = []
+        sentence = row[1]
+        #将一个句子分成bucket份
+        sentence = hAT.splitSentence(sentence)
+        for i in range(len(sentence)):
+            cut = re.sub(r, '', str(sentence[i]))
+            sen_cut.append(jieba.cut(cut))
+
+        #x 维度为[size, bucket, sentence, dimention]
+        for bucket_number in range(len(sen_cut)):
+            count = 0
+            for out in sen_cut[bucket_number]:
+                if (count < minSeqLength and out in model):
+                    sentenVec[bucket_number][count] = model[out]
+                    count += 1
+                    seq_length.append(count)
+
+        x.append(sentenVec)
+
+        if(row[3] > 2):
+            y.append(1)
+        else :
+            y.append(0)
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
 
 def getContentStatistic():
