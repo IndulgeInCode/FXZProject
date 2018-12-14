@@ -6,7 +6,7 @@ import dbConnect
 import numpy as np
 
 BUCKET_LENGTH = 4
-MAXLENGTH = 100
+MAXLENGTH = 150
 def splitSentence(sentence):
     if(len(sentence) < MAXLENGTH):
         for i in range(MAXLENGTH // len(sentence)):

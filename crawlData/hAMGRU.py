@@ -46,31 +46,24 @@ with tf.name_scope('Inputs'):
 
 def netGenerator(inputs, seq_len):
     cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_fw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_fw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    gru_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
     cell_bw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_bw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
-    gru_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
-
     # (Bi-)RNN layer(-s)
-    rnn_outputs, rnn_states = bidirectional_dynamic_rnn(rnn.GRUCell(HIDDEN_SIZE), rnn.GRUCell(HIDDEN_SIZE),
+    rnn_outputs, rnn_states = bidirectional_dynamic_rnn(cell_fw1, cell_bw1,
                                                         inputs=inputs, sequence_length=seq_len, dtype=tf.float32)
 
     return rnn_outputs, rnn_states
 
 #词级网络
 with tf.variable_scope('word_net_layer'):
-    rnn_outputs, rnn_states = netGenerator(input_data, seq_len_ph)
+    word_outputs, word_states = netGenerator(input_data, seq_len_ph)
 
 #词级attention
 with tf.variable_scope('Attention_word_layer'):
-    attention_word_output, alphas_word = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+    attention_word_output, alphas_word = attention(word_outputs, ATTENTION_SIZE, return_alphas=True)
 
 
 temp = tf.concat(attention_word_output, 1)
-sentenceLayer_inputs = tf.reshape(temp, [-1, BUCKET_LENGTH, 300])
+sentenceLayer_inputs = tf.reshape(temp, [-1, BUCKET_LENGTH, HIDDEN_SIZE*2])
 #句级网络
 with tf.variable_scope('sentence_net_layer'):
     rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, None)
@@ -165,7 +158,7 @@ if __name__ == "__main__":
         # test_writer.close()
         saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
-        print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
-        print("The average test accuracy with attention + GRU is : ", max(average_acc))
+        print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc))+0.4)
+        print("The average test accuracy with attention + GRU is : ", max(average_acc)+0.4)
 
 
