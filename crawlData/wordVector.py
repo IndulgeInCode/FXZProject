@@ -59,9 +59,9 @@ def getTrainSenteceVec(type):
 #将获取长数据
 def getLongRecord(type):
     if type == TRAINTYPE:
-        longData = dbConnect.getLongData(begin=0, end=3000)
+        longData = dbConnect.getData(begin=0, end=8000)
     elif type == TESTTYPE:
-        longData = dbConnect.getLongData(begin=3000, end=3000)
+        longData = dbConnect.getData(begin=6000, end=7000)
 
     return getSplitVec(longData)
 
