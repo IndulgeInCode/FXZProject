@@ -8,9 +8,6 @@ import numpy as np
 BUCKET_LENGTH = 4
 MAXLENGTH = 150
 def splitSentence(sentence):
-    if(len(sentence) < MAXLENGTH):
-        for i in range(MAXLENGTH // len(sentence)):
-            sentence += sentence
     r = re.compile(u"\n|。")
 
     sentence = re.split(r, sentence)
