@@ -20,7 +20,7 @@ HIDDEN_SIZE = 150
 ATTENTION_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 60  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 20  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
 BUCKET_LENGTH = 4
 MODEL_PATH = './model/attention_model'
@@ -30,8 +30,8 @@ X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
 X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
 
 
-X_train = X_train.reshape([-1, int(X_train.shape[2]), EMBEDDING_DIM])
-X_test = X_test.reshape([-1, int(X_test.shape[2]), EMBEDDING_DIM])
+X_train = X_train.reshape([-1, SEQUENCE_LENGTH, EMBEDDING_DIM])
+X_test = X_test.reshape([-1, SEQUENCE_LENGTH, EMBEDDING_DIM])
 
 SEQUENCE_LENGTH = X_train.shape[1]
 
@@ -39,7 +39,7 @@ SEQUENCE_LENGTH = X_train.shape[1]
 with tf.name_scope('Inputs'):
     input_data = tf.placeholder(tf.float32, [None, SEQUENCE_LENGTH, EMBEDDING_DIM], name='input_data')
     target_ph = tf.placeholder(tf.float32, [None], name='target_ph')
-    # seq_len_ph = tf.placeholder(tf.int32, [None, ], name='seq_len_ph')
+    seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
 
 
@@ -56,13 +56,13 @@ def netGenerator(inputs, seq_len):
 
     # (Bi-)RNN layer(-s)
     rnn_outputs, rnn_states = bidirectional_dynamic_rnn(rnn.GRUCell(HIDDEN_SIZE), rnn.GRUCell(HIDDEN_SIZE),
-                                                        inputs=inputs, dtype=tf.float32)
+                                                        inputs=inputs, sequence_length=seq_len, dtype=tf.float32)
 
     return rnn_outputs, rnn_states
 
 #词级网络
 with tf.variable_scope('word_net_layer'):
-    rnn_outputs, rnn_states = netGenerator(input_data, None)
+    rnn_outputs, rnn_states = netGenerator(input_data, seq_len_ph)
 
 #词级attention
 with tf.variable_scope('Attention_word_layer'):
@@ -130,12 +130,12 @@ if __name__ == "__main__":
 
             print("epoch: {}\t".format(epoch))
 
-            num_batches = X_train.shape[0] // BATCH_SIZE
-            for j in range(num_batches-1):
+            num_batches = X_train.shape[0] // (BATCH_SIZE*4)
+            for j in range(num_batches):
                 loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
                                                     feed_dict={input_data: X_train[j*4*BATCH_SIZE:(j+1)*4*BATCH_SIZE],
                                                                target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                                                               # seq_len_ph: seq_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                                                               seq_len_ph: seq_len_train[j*4*BATCH_SIZE:(j+1)*4*BATCH_SIZE],
                                                                keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
@@ -143,12 +143,12 @@ if __name__ == "__main__":
             accuracy_train /= num_batches
 
             # Testing
-            num_batches = X_test.shape[0] // BATCH_SIZE
-            for k in range(num_batches-1):
+            num_batches = X_test.shape[0] // (BATCH_SIZE*4)
+            for k in range(num_batches):
                 loss_test_batch, acc = sess.run([loss, accuracy],
                                                     feed_dict={input_data: X_test[k * 4 * BATCH_SIZE:(k + 1) * 4 * BATCH_SIZE],
                                                                target_ph: y_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
-                                                               # seq_len_ph: seq_len_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
+                                                               seq_len_ph: seq_len_test[k*4 * BATCH_SIZE:(k + 1)*4 * BATCH_SIZE],
                                                                keep_prob_ph: 1.0})
                 accuracy_test += acc
                 loss_test += loss_test_batch

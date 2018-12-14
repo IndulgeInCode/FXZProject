@@ -105,7 +105,8 @@ def getSplitVec(data):
 
     # 遍历每条数据，并转换为向量形式
     for row in data:
-        sentenVec = np.zeros([BUCKET_LEN, minSeqLength, EMBEDDING_DIM], dtype='float32')
+        sentenVec = np.zeros([minSeqLength, EMBEDDING_DIM], dtype='float32')
+
         sen_cut = []
         sentence = row[1]
         #将一个句子分成bucket份
@@ -119,11 +120,14 @@ def getSplitVec(data):
             count = 0
             for out in sen_cut[bucket_number]:
                 if (count < minSeqLength and out in model):
-                    sentenVec[bucket_number][count] = model[out]
+                    sentenVec[count] = model[out]
                     count += 1
                     seq_length.append(count)
 
-        x.append(sentenVec)
+            if(count < minSeqLength):
+                for i in range(minSeqLength - count):
+                    seq_length.append(0)
+            x.append(sentenVec)
 
         if(row[3] > 2):
             y.append(1)
