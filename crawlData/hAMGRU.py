@@ -13,25 +13,26 @@ import wordVector
 import hierarchicalAttention as hAtten
 
 NUM_WORDS = 10000
-INDEX_FROM = 3
-SEQUENCE_LENGTH = 100
+
+MAXREVLEN = 5
+SENTLENGTH = 20
 EMBEDDING_DIM = 10
+
 HIDDEN_SIZE = 150
 ATTENTION_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
 EPOCHS = 20  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
 DELTA = 0.5
-BUCKET_LENGTH = 4
-MODEL_PATH = './model/attention_model'
+
 
 # init data
 X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
 X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
 
 
-X_train = X_train.reshape([-1, SEQUENCE_LENGTH, EMBEDDING_DIM])
-X_test = X_test.reshape([-1, SEQUENCE_LENGTH, EMBEDDING_DIM])
+X_train = X_train.reshape([-1, SENTLENGTH, EMBEDDING_DIM])
+X_test = X_test.reshape([-1, SENTLENGTH, EMBEDDING_DIM])
 
 SEQUENCE_LENGTH = X_train.shape[1]
 
@@ -55,18 +56,18 @@ def netGenerator(inputs, seq_len):
 
 #词级网络
 with tf.variable_scope('word_net_layer'):
-    word_outputs, word_states = netGenerator(input_data, seq_len_ph)
+    word_outputs, word_states = netGenerator(input_data, None)
 
 #词级attention
 with tf.variable_scope('Attention_word_layer'):
     attention_word_output, alphas_word = attention(word_outputs, ATTENTION_SIZE, return_alphas=True)
 
+# temp = tf.concat(attention_word_output, 1)
+sentenceLayer_inputs = tf.reshape(attention_word_output, [-1, MAXREVLEN, HIDDEN_SIZE*2])
 
-temp = tf.concat(attention_word_output, 1)
-sentenceLayer_inputs = tf.reshape(temp, [-1, BUCKET_LENGTH, HIDDEN_SIZE*2])
 #句级网络
 with tf.variable_scope('sentence_net_layer'):
-    rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, None)
+    rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, seq_len_ph)
 
 #句级attention
 with tf.variable_scope('Attention_sentence_layer'):
@@ -88,23 +89,15 @@ with tf.variable_scope('Fully_connected_layer'):
 
 with tf.name_scope('Metrics'):
     # Cross-entropy loss and optimizer initialization
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_hat, labels=target_ph))
+    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_hat[0 : 256], labels=target_ph))
     tf.summary.scalar('loss', loss)
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
 
     # Accuracy metric
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat)), target_ph), tf.float32))
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat[0:256])), target_ph), tf.float32))
     tf.summary.scalar('accuracy', accuracy)
 
 merged = tf.summary.merge_all()
-
-# Batch generators
-# train_batch_generator = batch_generator(X_train, y_train, BATCH_SIZE)
-# test_batch_generator = batch_generator(X_test, y_test, BATCH_SIZE)
-
-# 输出日志
-# train_writer = tf.summary.FileWriter('./logdir/train', accuracy.graph)
-# test_writer = tf.summary.FileWriter('./logdir/test', accuracy.graph)
 
 session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
 
@@ -123,12 +116,13 @@ if __name__ == "__main__":
 
             print("epoch: {}\t".format(epoch))
 
-            num_batches = X_train.shape[0] // (BATCH_SIZE*4)
+            num_batches = X_train.shape[0] // (BATCH_SIZE * MAXREVLEN)
             for j in range(num_batches):
-                loss_tr, acc, _, summary = sess.run([loss, accuracy, optimizer, merged],
-                                                    feed_dict={input_data: X_train[j*4*BATCH_SIZE:(j+1)*4*BATCH_SIZE],
-                                                               target_ph: y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                                                               seq_len_ph: seq_len_train[j*4*BATCH_SIZE:(j+1)*4*BATCH_SIZE],
+                awouts, loss_tr, acc, _, summary = sess.run([attention_word_output, loss, accuracy, optimizer, merged],
+                # attention_word_outs,summary=sess.run([attention_word_output, merged],
+                                                    feed_dict={input_data: X_train[j * BATCH_SIZE * MAXREVLEN:(j+1) * BATCH_SIZE * MAXREVLEN],
+                                                               target_ph: y_train[j * BATCH_SIZE:(j+1) * BATCH_SIZE],
+                                                               seq_len_ph: seq_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
@@ -136,12 +130,12 @@ if __name__ == "__main__":
             accuracy_train /= num_batches
 
             # Testing
-            num_batches = X_test.shape[0] // (BATCH_SIZE*4)
+            num_batches = X_test.shape[0] // (BATCH_SIZE * MAXREVLEN)
             for k in range(num_batches):
                 loss_test_batch, acc = sess.run([loss, accuracy],
-                                                    feed_dict={input_data: X_test[k * 4 * BATCH_SIZE:(k + 1) * 4 * BATCH_SIZE],
+                                                    feed_dict={input_data: X_test[k * BATCH_SIZE * MAXREVLEN:(k + 1) * BATCH_SIZE * MAXREVLEN],
                                                                target_ph: y_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
-                                                               seq_len_ph: seq_len_test[k*4 * BATCH_SIZE:(k + 1)*4 * BATCH_SIZE],
+                                                               seq_len_ph: seq_len_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                keep_prob_ph: 1.0})
                 accuracy_test += acc
                 loss_test += loss_test_batch
@@ -150,15 +144,15 @@ if __name__ == "__main__":
             loss_test /= num_batches
 
             print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
-                loss_train-0.2, loss_test-0.2, accuracy_train+0.4, accuracy_test+0.4
+                loss_train, loss_test, accuracy_train, accuracy_test
             ))
             if (epoch > 5):
                 average_acc.append(accuracy_test)
         # train_writer.close()
         # test_writer.close()
-        saver.save(sess, MODEL_PATH)
+        # saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
-        print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc))+0.4)
-        print("The average test accuracy with attention + GRU is : ", max(average_acc)+0.4)
+        print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
+        print("The average test accuracy with attention + GRU is : ", max(average_acc))
 
 
