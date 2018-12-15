@@ -26,6 +26,10 @@ def splitSentence(sentence):
     if flag :
         result.append(str)
 
+    if len(result) == 1 and len(result[0]) >= 80:
+         for s in range(len(result[0]) / MAXLENGTH):
+             result.append(result[0][i * MAXLENGTH : (i+1) * MAXLENGTH])
+         result.pop(0)
     return result
 
 # -*- coding: UTF-8 -*-
