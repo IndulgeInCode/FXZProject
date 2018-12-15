@@ -49,7 +49,7 @@ cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_p
 gru_backward = rnn.MultiRNNCell(cells=[cell_bw1,cell_bw2])
 
 # (Bi-)RNN layer(-s)
-rnn_outputs, rnn_states = bidirectional_dynamic_rnn(cell_fw1, cell_bw1,
+rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 # tf.summary.histogram('RNN_outputs', rnn_outputs)
 
