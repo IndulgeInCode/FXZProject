@@ -8,6 +8,7 @@ import numpy as np
 import re
 import matplotlib.pyplot as plt
 import hierarchicalAttention as hAT
+from tensorflow.contrib.keras import preprocessing
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -15,13 +16,15 @@ sys.setdefaultencoding('utf-8')
 # 正则过滤表达式
 r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
 maxSeqLength = 250
-minSeqLength = 100
+
 EMBEDDING_DIM = 10
 LONG_TRAINTYPE = 3
 LONG_TESTTYPE = 2
 TRAINTYPE = 1
 TESTTYPE = 0
 BUCKET_LEN = 4
+MAXREVLEN = 5
+SENTLENGTH = 20
 
 def buildModel():
     # 所有词集合，包括重复词
@@ -59,9 +62,9 @@ def getTrainSenteceVec(type):
 #将获取长数据
 def getLongRecord(type):
     if type == TRAINTYPE:
-        longData = dbConnect.getData(begin=0, end=8000)
+        longData = dbConnect.getLongData(begin=0, end=8000)
     elif type == TESTTYPE:
-        longData = dbConnect.getData(begin=6000, end=7000)
+        longData = dbConnect.getLongData(begin=8000, end=7000)
 
     return getSplitVec(longData)
 
@@ -101,39 +104,42 @@ def getSplitVec(data):
     # print (model[u'罗技'])
     x = []
     y = []
-    seq_length = []
+    review_len = []
 
     # 遍历每条数据，并转换为向量形式
     for row in data:
-        sentenVec = np.zeros([minSeqLength, EMBEDDING_DIM], dtype='float32')
-
-        sen_cut = []
-        sentence = row[1]
-        #将一个句子分成bucket份
-        sentence = hAT.splitSentence(sentence)
-        for i in range(len(sentence)):
-            cut = re.sub(r, '', str(sentence[i]))
-            sen_cut.append(jieba.cut(cut))
-
-        #x 维度为[size, bucket, sentence, dimention]
-        for bucket_number in range(len(sen_cut)):
-            count = 0
-            for out in sen_cut[bucket_number]:
-                if (count < minSeqLength and out in model):
-                    sentenVec[count] = model[out]
-                    count += 1
-                    seq_length.append(count)
-
-            if(count < minSeqLength):
-                for i in range(minSeqLength - count):
-                    seq_length.append(0)
-            x.append(sentenVec)
-
+        sentence = hAT.splitSentence(row[1])
+        rowVec = []
+        count = 0
+        for sent in sentence:
+            count += 1
+            se_list = jieba.cut(sent)
+            sentenVec = []
+            for out in se_list:
+                if (out in model):
+                    sentenVec.append(model[out])
+            rowVec.append(sentenVec)
+        x.append(rowVec)
+        review_len.append(min(count, MAXREVLEN))
         if(row[3] > 2):
             y.append(1)
         else :
             y.append(0)
-    return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
+    #对段落化之后的数据进行整理
+    x_formate = preprocess_review(x, MAXREVLEN, SENTLENGTH)
+    return np.array(x_formate, dtype=np.float32), np.array(y, dtype=np.int32), np.array(review_len, dtype=np.int32)
+
+
+def preprocess_review(data, max_rev_len, sent_length,  keep_in_dict=10000):
+    length = len(data)
+    data_formatted = np.zeros([length, max_rev_len, sent_length, EMBEDDING_DIM], dtype='float32')
+
+    for i in range(length):
+        for j in range(min(len(data[i]), max_rev_len)):
+            for k in range(min(len(data[i][j]), sent_length)):
+                data_formatted[i][j][k] = data[i][j][k]
+    return data_formatted
+
 
 def getContentStatistic():
     plt.rcParams['font.sans-serif'] = ['SimHei']
