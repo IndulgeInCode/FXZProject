@@ -5,7 +5,7 @@ import re
 import dbConnect
 import numpy as np
 
-MAXLENGTH = 30
+MAXLENGTH = 40
 def splitSentence(sentence):
     r = re.compile(u"\n|。|\s")
 
@@ -26,10 +26,10 @@ def splitSentence(sentence):
     if flag :
         result.append(str)
 
-    if len(result) == 1 and len(result[0]) >= 80:
-         for s in range(len(result[0]) / MAXLENGTH):
-             result.append(result[0][i * MAXLENGTH : (i+1) * MAXLENGTH])
-         result.pop(0)
+    if len(result) == 1 and len(result[0]) >= 100:
+        for i in range(len(result[0]) / MAXLENGTH):
+            result.append(result[0][i * MAXLENGTH : (i+1) * MAXLENGTH])
+        result.pop(0)
     return result
 
 # -*- coding: UTF-8 -*-
