@@ -14,7 +14,7 @@ import hierarchicalAttention as hAtten
 
 NUM_WORDS = 10000
 
-MAXREVLEN = 7
+MAXREVLEN = 8
 SENTLENGTH = 20
 EMBEDDING_DIM = 10
 
