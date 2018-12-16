@@ -67,7 +67,7 @@ sentenceLayer_inputs = tf.reshape(attention_word_output, [-1, MAXREVLEN, HIDDEN_
 
 #句级网络
 with tf.variable_scope('sentence_net_layer'):
-    rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, None)
+    rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, seq_len_ph)
 
 #句级attention
 with tf.variable_scope('Attention_sentence_layer'):
