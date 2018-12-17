@@ -16,6 +16,7 @@ NUM_WORDS = 10000
 
 MAXREVLEN = 6
 SENTLENGTH = 20
+SEQUENCE_LENGTH_NOh = 250
 EMBEDDING_DIM = 10
 
 HIDDEN_SIZE = 150
@@ -27,14 +28,19 @@ DELTA = 0.5
 
 
 # init data
-X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
-X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
+# X_train, y_train, seq_len_train = wordVector.getLongRecord(1)
+# X_test, y_test, seq_len_test = wordVector.getLongRecord(0)
+
+X_train, y_train, seq_len_train, X_train_noh, y_train_noh, seq_len_train_noh = wordVector.getLongRecord(1)
+X_test, y_test, seq_len_test, X_test_noh, y_test_noh, seq_len_test_noh = wordVector.getLongRecord(0)
 
 
 X_train = X_train.reshape([-1, SENTLENGTH, EMBEDDING_DIM])
 X_test = X_test.reshape([-1, SENTLENGTH, EMBEDDING_DIM])
 
+
 SEQUENCE_LENGTH = X_train.shape[1]
+
 
 # Different placeholders
 with tf.name_scope('Inputs'):
@@ -43,7 +49,22 @@ with tf.name_scope('Inputs'):
     seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
     keep_prob_ph = tf.placeholder(tf.float32, name='keep_prob_ph')
 
+    input_data_noh = tf.placeholder(tf.float32, [None, SEQUENCE_LENGTH_NOh, EMBEDDING_DIM], name='input_data')
+    seq_len_ph_noh = tf.placeholder(tf.int32, [None], name='seq_len_ph')
 
+def netGenerator_noh(input_noh, seq_len_noh):
+    cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_fw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_fw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    gru_forward = rnn.MultiRNNCell(cells=[cell_fw1, cell_fw2])
+    cell_bw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_bw2 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    cell_bw3 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
+    gru_backward = rnn.MultiRNNCell(cells=[cell_bw1, cell_bw2])
+
+    rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
+                                                        inputs=input_noh, sequence_length=seq_len_noh, dtype=tf.float32)
+    return rnn_outputs, rnn_states
 
 def netGenerator(inputs, seq_len):
     cell_fw1 = tf.nn.rnn_cell.DropoutWrapper(rnn.GRUCell(HIDDEN_SIZE), output_keep_prob=keep_prob_ph)
@@ -54,6 +75,7 @@ def netGenerator(inputs, seq_len):
 
     return rnn_outputs, rnn_states
 
+############################### hierarchical attention 输入########################################
 #词级网络
 with tf.variable_scope('word_net_layer'):
     word_outputs, word_states = netGenerator(input_data, None)
@@ -66,18 +88,27 @@ with tf.variable_scope('Attention_word_layer'):
 sentenceLayer_inputs = tf.reshape(attention_word_output, [-1, MAXREVLEN, HIDDEN_SIZE*2])
 
 #句级网络
-with tf.variable_scope('sentence_net_layer'):
-    rnn_outputs, rnn_states = netGenerator(sentenceLayer_inputs, seq_len_ph)
+with tf.variable_scope('sentence_net_layer1'):
+    sentence_outputs, rnn_states = netGenerator(sentenceLayer_inputs, seq_len_ph)
 
 #句级attention
-with tf.variable_scope('Attention_sentence_layer'):
-    attention_output, alphas_word = attention(rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+with tf.variable_scope('Attention_sentence_layer1'):
+    attention_output, alphas_sentence = attention(sentence_outputs, ATTENTION_SIZE, return_alphas=True)
 
+############################### attention 输入########################################
+
+#词级网络
+with tf.variable_scope('sentence_net_layer2'):
+    word_outputs_noh, word_states_noh = netGenerator_noh(input_data_noh, seq_len_ph_noh)
+#句级attention
+with tf.variable_scope('Attention_sentence_layer2'):
+    attention_output_noh, alphas_sentence_noh = attention(word_outputs_noh, ATTENTION_SIZE, return_alphas=True)
 
 # Dropout drop位置有待商榷
 drop = tf.nn.dropout(attention_output, keep_prob_ph)
+drop = tf.nn.dropout(attention_output_noh, keep_prob_ph)
 
-
+attention_output = (1/2) * attention_output + (1/2) * attention_output_noh
 
 # Fully connected layer
 with tf.variable_scope('Fully_connected_layer'):
@@ -89,7 +120,7 @@ with tf.variable_scope('Fully_connected_layer'):
 
 with tf.name_scope('Metrics'):
     # Cross-entropy loss and optimizer initialization
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_hat[0 : 256], labels=target_ph))
+    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_hat, labels=target_ph))
     tf.summary.scalar('loss', loss)
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
 
@@ -123,6 +154,8 @@ if __name__ == "__main__":
                                                     feed_dict={input_data: X_train[j * BATCH_SIZE * MAXREVLEN:(j+1) * BATCH_SIZE * MAXREVLEN],
                                                                target_ph: y_train[j * BATCH_SIZE:(j+1) * BATCH_SIZE],
                                                                seq_len_ph: seq_len_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                                                               input_data_noh: X_train_noh[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
+                                                               seq_len_ph_noh: seq_len_train_noh[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                                                                keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
@@ -136,6 +169,8 @@ if __name__ == "__main__":
                                                     feed_dict={input_data: X_test[k * BATCH_SIZE * MAXREVLEN:(k + 1) * BATCH_SIZE * MAXREVLEN],
                                                                target_ph: y_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                seq_len_ph: seq_len_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
+                                                               input_data_noh: X_test_noh[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
+                                                               seq_len_ph_noh: seq_len_test_noh[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                keep_prob_ph: 1.0})
                 accuracy_test += acc
                 loss_test += loss_test_batch

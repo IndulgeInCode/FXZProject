@@ -66,7 +66,9 @@ def getLongRecord(type):
     elif type == TESTTYPE:
         longData = dbConnect.getData(begin=8000, end=7000)
 
-    return getSplitVec(longData)
+    X_train, y_train, seq_len_train = getSplitVec(longData)
+    X_train_noh, y_train_noh, seq_len_train_noh = getVec(longData)
+    return X_train, y_train, seq_len_train, X_train_noh, y_train_noh, seq_len_train_noh
 
 
 
