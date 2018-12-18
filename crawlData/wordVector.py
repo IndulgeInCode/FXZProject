@@ -18,13 +18,10 @@ r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
 maxSeqLength = 250
 
 EMBEDDING_DIM = 10
-LONG_TRAINTYPE = 3
-LONG_TESTTYPE = 2
 TRAINTYPE = 1
 TESTTYPE = 0
-BUCKET_LEN = 4
 MAXREVLEN = 6
-SENTLENGTH = 20
+SENTLENGTH = 25
 
 def buildModel():
     # 所有词集合，包括重复词
@@ -172,4 +169,4 @@ if __name__ == '__main__':
     # buildModel()
     # result = getTrainSenteceVec()
     # print result[0]
-    similarShow()
+    getReviewStatistic()
