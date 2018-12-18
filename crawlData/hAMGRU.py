@@ -125,7 +125,7 @@ with tf.name_scope('Metrics'):
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
 
     # Accuracy metric
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat[0:256])), target_ph), tf.float32))
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat)), target_ph), tf.float32))
     tf.summary.scalar('accuracy', accuracy)
 
 merged = tf.summary.merge_all()
