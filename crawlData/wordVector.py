@@ -21,7 +21,7 @@ EMBEDDING_DIM = 10
 TRAINTYPE = 1
 TESTTYPE = 0
 MAXREVLEN = 6
-SENTLENGTH = 25
+SENTLENGTH = 20
 
 def buildModel():
     # 所有词集合，包括重复词
