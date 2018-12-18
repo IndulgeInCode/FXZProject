@@ -108,7 +108,7 @@ with tf.variable_scope('Attention_sentence_layer2'):
 drop = tf.nn.dropout(attention_output, keep_prob_ph)
 drop = tf.nn.dropout(attention_output_noh, keep_prob_ph)
 
-attention_output = (1/3) * attention_output + (2/3) * attention_output_noh
+attention_output = (1/2) * attention_output + (1/2) * attention_output_noh
 
 # Fully connected layer
 with tf.variable_scope('Fully_connected_layer'):
