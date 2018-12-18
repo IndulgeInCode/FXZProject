@@ -55,16 +55,16 @@ def getTrainSenteceVec(type):
     if type == TRAINTYPE:
         data = dbConnect.getData(begin = 0, end = 8000)
     elif type ==  TESTTYPE:
-        data = dbConnect.getData(begin=8000, end=7000)
+        data = dbConnect.getData(begin=8000, end=12000)
 
     return getVec(data)
 
 #将获取长数据
 def getLongRecord(type):
     if type == TRAINTYPE:
-        longData = dbConnect.getData(begin=0, end=8000)
+        longData = dbConnect.getData(begin=0, end=9000)
     elif type == TESTTYPE:
-        longData = dbConnect.getData(begin=8000, end=7000)
+        longData = dbConnect.getData(begin=9000, end=6000)
 
     X_train, y_train, seq_len_train = getSplitVec(longData)
     X_train_noh, y_train_noh, seq_len_train_noh = getVec(longData)
@@ -143,7 +143,7 @@ def preprocess_review(data, max_rev_len, sent_length,  keep_in_dict=10000):
     return data_formatted
 
 
-def getContentStatistic():
+def getReviewStatistic():
     plt.rcParams['font.sans-serif'] = ['SimHei']
     plt.rcParams['axes.unicode_minus'] = False
     plt.figure(figsize=(20, 10))
@@ -157,10 +157,19 @@ def getContentStatistic():
     plt.show()
 
 
+def similarShow():
+    model = Word2Vec.load('word2vecModel/word2vecModel')
+    showNumber = 20
+    for key in model.similar_by_word(u"差", topn = 100):
+        print key[0],key[1]
+        showNumber -= 1
+        if showNumber<0:
+            break
 
 
 if __name__ == '__main__':
     # getContentStatistic()
-    buildModel()
+    # buildModel()
     # result = getTrainSenteceVec()
     # print result[0]
+    similarShow()
