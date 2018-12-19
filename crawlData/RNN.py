@@ -9,8 +9,8 @@ from sklearn import metrics
 
 
 TIME_STEPS=10
-BATCH_SIZE= 256
-HIDDEN_UNITS=5
+BATCH_SIZE=124
+HIDDEN_UNITS=150
 LEARNING_RATE=0.3
 EPOCH=60
 # 最后输出分类类别数量
@@ -49,29 +49,26 @@ with graph.as_default():
     senten_len_batch = tf.placeholder(dtype=tf.int32 ,shape=[BATCH_SIZE],name="senten_len_batch")
 
     #lstm instance
-    lstm_forward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
-    lstm_forward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
+    lstm_forward_1 = rnn.BasicRNNCell(num_units=HIDDEN_UNITS)
+    lstm_forward_2 = rnn.BasicRNNCell(num_units=HIDDEN_UNITS)
     # lstm_forward_3 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
 
     lstm_forward = rnn.MultiRNNCell(cells=[lstm_forward_1])
 
-    lstm_backward_1 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
-    lstm_backward_2 = rnn.LSTMCell(num_units=HIDDEN_UNITS)
+    lstm_backward_1 = rnn.BasicRNNCell(num_units=HIDDEN_UNITS)
+    lstm_backward_2 = rnn.BasicRNNCell(num_units=HIDDEN_UNITS)
 
     lstm_backward = rnn.MultiRNNCell(cells=[lstm_backward_1])
 
 
-    outputs,states=tf.nn.bidirectional_dynamic_rnn(
-        cell_fw=lstm_forward,
-        cell_bw=lstm_backward,
+    outputs,states=tf.nn.dynamic_rnn(
+        cell=lstm_forward,
         inputs=x_tru,
         sequence_length=senten_len_batch,
         dtype=tf.float32
     )
-    states_fw=states[0]
-    states_bw = states[1]
     #
-    h = states_fw[-1][1]
+    h = states[0]
 
     # Fully connected layer
     with tf.name_scope('Fully_connected_layer'):
@@ -106,7 +103,6 @@ with graph.as_default():
     # Accuracy metric
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat)), y_tru), tf.float32))
     tf.summary.scalar('accuracy', accuracy)
-
     y_predict = tf.round(tf.sigmoid(y_hat))
 
 
@@ -145,9 +141,9 @@ with tf.Session(graph=graph) as sess:
             train_losses.append(train_loss)
             train_accus.append(accu)
 
-        for k in range(TEST_EXAMPLES/BATCH_SIZE):
-            test_accu,y_predict_outs,test_loss=sess.run(
-                    fetches=(accuracy,y_predict, loss),
+        for k in range(TEST_EXAMPLES/BATCH_SIZE-1):
+            test_accu, y_predict_outs, test_loss=sess.run(
+                    fetches=(accuracy, y_predict, loss),
                     feed_dict={
                             x_tru:X_test[k*BATCH_SIZE:(k+1)*BATCH_SIZE],
                             y_tru:y_test[k*BATCH_SIZE:(k+1)*BATCH_SIZE],
@@ -155,17 +151,14 @@ with tf.Session(graph=graph) as sess:
 
                         }
             )
-
-            y_predicts.extend(y_predict_outs)
-
             # print states_fw_out
+            y_predicts.extend(y_predict_outs)
             test_losses.append(test_loss)
             test_accus.append(test_accu)
 
         f1_score = metrics.f1_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
         precision = metrics.precision_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
         recall = metrics.recall_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
-
         print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}, f1_score: {:.3f}, precision: {:.3f}, recall: {:.3f}".format(
             (sum(train_losses) / len(train_losses)), (sum(test_losses) / len(test_losses)),
             (sum(train_accus)/len(train_accus)), (sum(test_accus) / len(test_accus)),
@@ -174,7 +167,6 @@ with tf.Session(graph=graph) as sess:
 
         if(epoch > 50):
             average_acc.append((sum(test_accus) / len(test_accus)))
-
 
     print("The average test accuracy with LSTM is : ", (sum(average_acc) / len(average_acc)))
     print("The average test accuracy with LSTM is : ", max(average_acc))

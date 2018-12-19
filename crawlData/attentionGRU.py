@@ -8,6 +8,7 @@ from keras.datasets import imdb
 import tensorflow.contrib.rnn as rnn
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn
 from tqdm import tqdm
+from sklearn import metrics
 
 from attention import attention
 from utils import get_vocabulary_size, fit_in_vocabulary, zero_pad, batch_generator
@@ -81,6 +82,7 @@ with tf.name_scope('Metrics'):
     # Accuracy metric
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.round(tf.sigmoid(y_hat)), target_ph), tf.float32))
     tf.summary.scalar('accuracy', accuracy)
+    y_predict = tf.round(tf.sigmoid(y_hat))
 
 merged = tf.summary.merge_all()
 
@@ -106,6 +108,7 @@ if __name__ == "__main__":
             loss_test = 0
             accuracy_train = 0
             accuracy_test = 0
+            y_predicts = []
 
             print("epoch: {}\t".format(epoch))
 
@@ -124,20 +127,28 @@ if __name__ == "__main__":
             # Testing
             num_batches = X_test.shape[0] // BATCH_SIZE
             for k in range(num_batches):
-                loss_test_batch, acc = sess.run([loss, accuracy],
+                loss_test_batch, y_predict_outs, acc = sess.run([loss, y_predict, accuracy],
                                                     feed_dict={input_data: X_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                target_ph: y_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                seq_len_ph: seq_len_test[k * BATCH_SIZE:(k + 1) * BATCH_SIZE],
                                                                keep_prob_ph: 1.0})
+
+                y_predicts.extend(y_predict_outs)
+
                 accuracy_test += acc
                 loss_test += loss_test_batch
                 # test_writer.add_summary(summary, b + num_batches * epoch)
+
             accuracy_test /= num_batches
             loss_test /= num_batches
-
-            print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}".format(
-                loss_train, loss_test, accuracy_train, accuracy_test
+            f1_score = metrics.f1_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
+            precision = metrics.precision_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
+            recall = metrics.recall_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
+            print("loss: {:.3f}, test_loss: {:.3f}, acc: {:.3f}, test_acc: {:.3f}, f1_score: {:.3f}, precision: {:.3f}, recall: {:.3f}".format(
+                loss_train, loss_test, accuracy_train, accuracy_test, f1_score, precision, recall
             ))
+
+
             if (epoch > 5):
                 average_acc.append(accuracy_test)
         # train_writer.close()
