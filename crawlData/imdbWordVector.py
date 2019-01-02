@@ -15,6 +15,7 @@ sys.setdefaultencoding('utf-8')
 
 # 正则过滤表达式
 r = "（|）|；|、|！|，|。|\*|？|~|\<|\>|\s+"
+r_imdb = ",|.|!|(|)"
 maxSeqLength = 250
 
 EMBEDDING_DIM = 10
@@ -32,9 +33,8 @@ def buildModel():
 
     sentences = []
     for x in data:
-        line = re.sub(r, '', str(x[1]))
-        se_list = jieba.cut(line, cut_all=True)
-        result = list(se_list)
+        line = re.sub(r_imdb, '', str(x[1]))
+        result = line.split(' ')
         # allSentences.extend(result)
         sentences.append(result)
 
@@ -50,18 +50,18 @@ def buildModel():
 # 将句子变成向量形式
 def getTrainSenteceVec(type):
     if type == TRAINTYPE:
-        data = dbConnect.getData(begin = 0, end = 9000)
+        data = dbConnect.getData(begin = 0, end = 8000, type = 2)
     elif type ==  TESTTYPE:
-        data = dbConnect.getData(begin=9000, end=11000)
+        data = dbConnect.getData(begin=8000, end=12000, type = 2)
 
     return getVec(data)
 
 #将获取长数据
 def getLongRecord(type):
     if type == TRAINTYPE:
-        longData = dbConnect.getData(begin=0, end=9000)
+        longData = dbConnect.getData(begin=0, end=9000, type = 2)
     elif type == TESTTYPE:
-        longData = dbConnect.getData(begin=9000, end=6000)
+        longData = dbConnect.getData(begin=9000, end=6000, type = 2)
 
     X_train, y_train, seq_len_train = getSplitVec(longData)
     X_train_noh, y_train_noh, seq_len_train_noh = getVec(longData)
@@ -80,8 +80,7 @@ def getVec(data):
     for row in data:
         sentenVec = np.zeros([maxSeqLength, EMBEDDING_DIM], dtype='float32')
         sentence = row[1]
-        sentence = re.sub(r, '', str(sentence))
-        se_list = jieba.cut(sentence)
+        se_list = sentence.split(' ')
 
         count = 0
         for out in se_list:
@@ -141,15 +140,13 @@ def preprocess_review(data, max_rev_len, sent_length,  keep_in_dict=10000):
 
 
 def getReviewStatistic():
-    # plt.rcParams['font.sans-serif'] = ['SimHei']
-    # plt.rcParams['axes.unicode_minus'] = False
-    # plt.figure(figsize=(20, 10))
-    x = range(50, 500, 50)
-    y = dbConnect.getLengthStatistic()
+
+    x = range(25, 2500, 100)
+    y = dbConnect.getLengthStatistic(type = 2)
 
     y_formate1 = []
     y_formate2 = []
-    batch_size= len(y)/10
+    batch_size= len(y)/100
     for i in range(len(x)):
         y_formate1.append(y[i *batch_size: (i+1)* batch_size])
     for k in range(len(y_formate1)):
@@ -158,24 +155,13 @@ def getReviewStatistic():
             temp += y_formate1[k][j]
         y_formate2.append(temp)
 
-    plt.title('Content length')
+    plt.title('IMDB Content length')
 
     plt.bar(x, y_formate2, width=20, label=u'length', color='#666666')
     plt.show()
 
 
-def similarShow():
-    model = Word2Vec.load('word2vecModel/word2vecModel')
-    showNumber = 20
-    for key in model.similar_by_word(u"不好", topn = 100):
-        print key[0],key[1]
-        showNumber -= 1
-        if showNumber<0:
-            break
-
-
 if __name__ == '__main__':
     # getContentStatistic()
     # buildModel()
-    result = getTrainSenteceVec(type = 0)
-    print result[0]
+    getReviewStatistic()

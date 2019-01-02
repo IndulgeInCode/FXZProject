@@ -196,6 +196,6 @@ if __name__ == "__main__":
         # saver.save(sess, MODEL_PATH)
         # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
         print("The average test accuracy with attention + GRU is : ", (sum(average_acc)/len(average_acc)))
-        print("The average test accuracy with attention + GRU is : ", max(average_acc))
+        print("The max test accuracy with attention + GRU is : ", max(average_acc))
 
 
