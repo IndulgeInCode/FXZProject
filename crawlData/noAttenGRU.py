@@ -19,9 +19,9 @@ EMBEDDING_DIM = 10
 HIDDEN_SIZE = 150
 KEEP_PROB = 0.5
 BATCH_SIZE = 256
-EPOCHS = 20  # Model easily overfits without pre-trained words embeddings, that's why train for a few epochs
+EPOCHS = 20
 DELTA = 0.5
-MODEL_PATH = './model/noattention_model'
+MODEL_PATH = 'model/noattention_model'
 
 # init data
 X_train, y_train, seq_len_train = wordVector.getTrainSenteceVec(1)
@@ -51,17 +51,6 @@ gru_backward = rnn.MultiRNNCell(cells=[cell_bw1,cell_bw2])
 rnn_outputs, rnn_states = bidirectional_dynamic_rnn(gru_forward, gru_backward,
                         inputs=input_data, sequence_length=seq_len_ph, dtype=tf.float32)
 
-
-
-# rnn_states = tf.concat(rnn_states, 3)
-#
-# states_fw = rnn_states[0][0]
-# states_bw = rnn_states[1][0]
-
-
-# Dropout
-# drop = tf.nn.dropout(rnn_states, 1.0)
-# print ("drop shape is ",drop.shape)
 
 states_fw = rnn_states[0]
 states_bw = rnn_states[1]
@@ -140,6 +129,14 @@ if __name__ == "__main__":
             # accuracy_test /= num_batches
             # loss_test /= num_batches
 
+            if epoch == 1:
+                for i in range(5000):
+                    if y_test[i] != y_predicts[i]:
+                        print wordVector.getDataByNumber(i)
+                        print "——————————预测结果————————"+str(y_predicts[i])
+                        print "——————————真实结果————————"+str(y_test[i])
+
+
             f1_score = metrics.f1_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
             precision = metrics.precision_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
             recall = metrics.recall_score(y_test[0: (k + 1) * BATCH_SIZE], y_predicts)
@@ -151,6 +148,6 @@ if __name__ == "__main__":
             if(epoch > 5):
                 average_acc.append((sum(accuracy_test)/len(accuracy_test)))
         saver.save(sess, MODEL_PATH)
-        # print("Run 'tensorboard --logdir=./logdir' to checkout tensorboard logs.")
+
         print("The average test with GRU accuracy is : ", (sum(average_acc)/len(average_acc)))
         print("The average test with GRU accuracy is : ", max(average_acc))

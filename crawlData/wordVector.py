@@ -24,6 +24,9 @@ TESTTYPE = 0
 MAXREVLEN = 6
 SENTLENGTH = 20
 
+testdata = longData = dbConnect.getData(9000, end=6000);
+
+#词向量模型训练函数
 def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
@@ -68,20 +71,18 @@ def getLongRecord(type):
     return X_train, y_train, seq_len_train, X_train_noh, y_train_noh, seq_len_train_noh
 
 
-
+#转换中文字符为词向量形式
 def getVec(data):
-    model = Word2Vec.load('word2vecModel/word2vecModel')
+    model = Word2Vec.load('/Users/fengxuanzhen/pycharm-workspace/review_sentiment/fxzproject/crawlData/word2vecModel/word2vecModel')
     # print (model[u'罗技'])
     x = []
     y = []
     seq_length = []
-
+    ids = []
     # 遍历每条数据，并转换为向量形式
     for row in data:
         sentenVec = np.zeros([maxSeqLength, EMBEDDING_DIM], dtype='float32')
-        sentence = row[1]
-        sentence = re.sub(r, '', str(sentence))
-        se_list = jieba.cut(sentence)
+        se_list = wordsplitsentence(row[1])
 
         count = 0
         for out in se_list:
@@ -89,6 +90,7 @@ def getVec(data):
                 sentenVec[count] = model[out]
                 count += 1
         seq_length.append(count)
+        ids.append(row[0])
         x.append(sentenVec)
 
         if(row[3] > 2):
@@ -98,6 +100,7 @@ def getVec(data):
 
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
 
+#对长句子进行切分并转换词向量
 def getSplitVec(data):
     model = Word2Vec.load('word2vecModel/word2vecModel')
     # print (model[u'罗技'])
@@ -128,7 +131,7 @@ def getSplitVec(data):
     x_formate = preprocess_review(x, MAXREVLEN, SENTLENGTH)
     return np.array(x_formate, dtype=np.float32), np.array(y, dtype=np.int32), np.array(review_len, dtype=np.int32)
 
-
+#长句切割函数
 def preprocess_review(data, max_rev_len, sent_length,  keep_in_dict=10000):
     length = len(data)
     data_formatted = np.zeros([length, max_rev_len, sent_length, EMBEDDING_DIM], dtype='float32')
@@ -139,7 +142,7 @@ def preprocess_review(data, max_rev_len, sent_length,  keep_in_dict=10000):
                 data_formatted[i][j][k] = data[i][j][k]
     return data_formatted
 
-
+#获取评论统计信息
 def getReviewStatistic():
     # plt.rcParams['font.sans-serif'] = ['SimHei']
     # plt.rcParams['axes.unicode_minus'] = False
@@ -163,7 +166,7 @@ def getReviewStatistic():
     plt.bar(x, y_formate2, width=20, label=u'length', color='#666666')
     plt.show()
 
-
+#获取相似词信息
 def similarShow():
     model = Word2Vec.load('word2vecModel/word2vecModel')
     showNumber = 20
@@ -173,9 +176,31 @@ def similarShow():
         if showNumber<0:
             break
 
+#句子分词展示函数
+def getWordSplit():
+    data = dbConnect.getData(begin = 50, end = 100)
+    for raw in data:
+         splitresult = wordsplitsentence(raw[1])
+         printresult = ""
+         for word in splitresult:
+             printresult += word + " "
+         print printresult
+
+
+#句子分词函数
+def wordsplitsentence(sentence):
+    sentence = re.sub(r, '', str(sentence))
+    se_list = jieba.cut(sentence)
+    return se_list
+
+def getDataByNumber(id):
+    return testdata[id][1]
+
 
 if __name__ == '__main__':
     # getContentStatistic()
     # buildModel()
-    result = getTrainSenteceVec(type = 0)
-    print result[0]
+    # result = getTrainSenteceVec(type = 0)
+    # print result[0]
+
+    print getDataByNumber(3)

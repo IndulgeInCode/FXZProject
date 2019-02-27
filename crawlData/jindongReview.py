@@ -29,8 +29,18 @@ def getReview(productId = 0):
                 list = []
                 for k in b['comments']:
                     dict = {}
+                    dict["id"] = k["id"]
+                    # 评论内容
                     content = k["content"].encode('utf-8')
                     dict["content"] = content
+                    # 创建时间
+                    dict["creatTime"] = k["creationTime"].encode('utf-8')
+                    dict["isMobile"] = k["isMobile"].encode('utf-8')
+                    # 客户端来源
+                    dict["userClientShow"] = k["userClientShow"].encode('utf-8')
+                    # 购买商品名称
+                    dict["referenceName"] = k["referenceName"].encode('utf-8')
+                    #购买商品时间
                     referenceTime=k["referenceTime"].encode('utf-8')
                     dict["referenceTime"] = referenceTime
                     score = k["score"]

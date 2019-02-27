@@ -29,22 +29,22 @@ def buildModel():
     # 所有词集合，包括重复词
     # allSentences = []
 
-    data = dbConnect.getData(begin=0, end=22000)
+    data = dbConnect.getData(begin=0, end=50000, type=2)
 
     sentences = []
     for x in data:
-        line = re.sub(r_imdb, '', str(x[1]))
-        result = line.split(' ')
+        # line = re.sub(r_imdb, '', str(x[1]))
+        result = x[1].split(' ')
         # allSentences.extend(result)
         sentences.append(result)
 
     # min_count指定了需要训练词语的最小出现次数，默认为5
     # size指定了训练时词向量维度，默认为100
     # worker指定了完成训练过程的线程数，默认为1不使用多线程。只有注意安装Cython的前提下该参数设置才有意义
-    model = Word2Vec(sentences, min_count = 1, size = EMBEDDING_DIM)
+    model = Word2Vec(sentences, min_count = 2, size = EMBEDDING_DIM)
 
     # 保存模型
-    model.save("word2vecModel/word2vecModel")
+    model.save("word2vecModel/imdb_word2vecModel")
 
 
 # 将句子变成向量形式
@@ -70,7 +70,7 @@ def getLongRecord(type):
 
 
 def getVec(data):
-    model = Word2Vec.load('word2vecModel/word2vecModel')
+    model = Word2Vec.load('word2vecModel/imdb_word2vecModel')
     # print (model[u'罗技'])
     x = []
     y = []
@@ -98,7 +98,7 @@ def getVec(data):
     return np.array(x, dtype=np.float32), np.array(y, dtype=np.float32), np.array(seq_length, dtype=np.int32)
 
 def getSplitVec(data):
-    model = Word2Vec.load('word2vecModel/word2vecModel')
+    model = Word2Vec.load('word2vecModel/imdb_word2vecModel')
     # print (model[u'罗技'])
     x = []
     y = []
@@ -160,8 +160,17 @@ def getReviewStatistic():
     plt.bar(x, y_formate2, width=20, label=u'length', color='#666666')
     plt.show()
 
+def similarShow():
+    model = Word2Vec.load('word2vecModel/imdb_word2vecModel')
+    showNumber = 20
+    for key in model.similar_by_word(u"fun", topn = 100):
+        print key[0],key[1]
+        showNumber -= 1
+        if showNumber<0:
+            break
 
 if __name__ == '__main__':
     # getContentStatistic()
     # buildModel()
+    # similarShow()
     getReviewStatistic()

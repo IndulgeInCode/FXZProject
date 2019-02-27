@@ -7,7 +7,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-host = "10.103.247.186"
+host = "localhost"
 # host = ""
 user = "root"
 password = "fengxuanzhen"
@@ -112,11 +112,14 @@ def getRecordByContent(content):
 
 
 
-# create table imdb_review (
-#     id bigint(16) AUTO_INCREMENT ,
+# create review (
+#     id bigint(16),
+#     creat_time data,
+#     product_name varchar(100),
 #     content text(300),
 #     score int(3),
 #     sentiment int(3),
 #     length int(3),
+#     token varchar(15),
 #     PRIMARY KEY (id)
 # );
