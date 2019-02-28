@@ -7,8 +7,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-host = "localhost"
-# host = ""
+host = "10.128.214.223"
+# host = "localhost"
 user = "root"
 password = "fengxuanzhen"
 database = "sentimentJD_review"
