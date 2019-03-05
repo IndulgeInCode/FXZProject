@@ -24,7 +24,7 @@ TESTTYPE = 0
 MAXREVLEN = 6
 SENTLENGTH = 20
 
-testdata = longData = dbConnect.getData(9000, end=6000);
+testdata = longData = dbConnect.getData(begin=28000, end=400);
 
 #词向量模型训练函数
 def buildModel():
@@ -178,7 +178,7 @@ def similarShow():
 
 #句子分词展示函数
 def getWordSplit():
-    data = dbConnect.getData(begin = 50, end = 100)
+    data = testdata[100:300]
     for raw in data:
          splitresult = wordsplitsentence(raw[1])
          printresult = ""
@@ -193,8 +193,24 @@ def wordsplitsentence(sentence):
     se_list = jieba.cut(sentence)
     return se_list
 
-def getDataByNumber(id):
-    return testdata[id][1]
+def getOriginalData():
+    data = testdata[0:100]
+    for raw in data:
+        print raw[1]
+
+def getdiffVec():
+    model = Word2Vec.load('/Users/fengxuanzhen/pycharm-workspace/review_sentiment/fxzproject/crawlData/word2vecModel/word2vecModel')
+    print ("wuliu",model[u'满意'])
+    print ("kefu", model[u'超高'])
+    print ("xingjiabi", model[u'腾讯'])
+    print ("wuliu", model[u'后悔'])
+    print ("huodong", model[u'不行'])
+    print ("shitidian", model[u'流畅'])
+    print ("dianchi", model[u'大气'])
+    print ("waiguan", model[u'安装'])
+    print ("xiangsu", model[u'不错'])
+    print ("shuangshiyi", model[u'第二天'])
+
 
 
 if __name__ == '__main__':
@@ -203,4 +219,6 @@ if __name__ == '__main__':
     # result = getTrainSenteceVec(type = 0)
     # print result[0]
 
-    print getDataByNumber(3)
+    getdiffVec()
+    # getWordSplit()
+    # getOriginalData()

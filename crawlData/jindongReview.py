@@ -35,9 +35,9 @@ def getReview(productId = 0):
                     dict["content"] = content
                     # 创建时间
                     dict["creatTime"] = k["creationTime"].encode('utf-8')
-                    dict["isMobile"] = k["isMobile"].encode('utf-8')
-                    # 客户端来源
-                    dict["userClientShow"] = k["userClientShow"].encode('utf-8')
+                    # dict["isMobile"] = k["isMobile"].encode('utf-8')
+                    # # 客户端来源
+                    # dict["userClientShow"] = k["userClientShow"].encode('utf-8')
                     # 购买商品名称
                     dict["referenceName"] = k["referenceName"].encode('utf-8')
                     #购买商品时间
@@ -72,12 +72,29 @@ def getProductIdByCategre(cat):
 
     return ids
 
+def getSearchResultIdByWord(keyword):
+    ids = []
+    url = 'https://search.jd.com/Search?keyword='+ str(keyword)
+    request = urllib2.Request(url)
+    response = urllib2.urlopen(request)
+    html = response.read()
+    soup = BeautifulSoup(html, 'html.parser')
+    allList = soup.find_all('li', attrs={'class': 'gl-item'})
+    for a in allList:
+        ids.append(a['data-sku'])
+    return ids
+
 
 if __name__ == '__main__':
     # ids = getProductIdByCategre('9987,653,655&page=1')
     # ids.extend(getProductIdByCategre('670,671,672&page=1'))
-    ids = getProductIdByCategre('670,686,690&page=1')
-    ids.extend(getProductIdByCategre('737,794,798&page=1'))
+
+    #化妆品礼盒
+    # ids = getProductIdByCategre('1316,1381,1396&page=1')
+    #收纳盒
+    ids = getProductIdByCategre('1620,13780&page=1')
+    # ids = getProductIdByCategre('670,686,690&page=1')
+    # ids.extend(getProductIdByCategre('737,794,798&page=1'))
     for id in ids:
         getReview(id)
 

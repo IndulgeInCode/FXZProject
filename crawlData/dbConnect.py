@@ -7,7 +7,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-host = "10.128.214.223"
+host = "10.103.240.156"
 # host = "localhost"
 user = "root"
 password = "fengxuanzhen"
